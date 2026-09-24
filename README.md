@@ -1,6 +1,6 @@
 # yolocam
 
-This is a reverse-engineering effort of the amazing YoloLiv YoloCam S3 webcam.
+This is a reverse-engineering effort of the amazing YoloLiv YoloCam S3 webcam (and probably other YoloLiv webcams).
 
 Image-quality wise, this is one of the best webcams I've ever had. And it implements UVC, so its video output appears on
 pretty much any device completely plug and play. Unfortunately though, its protocol for actually configuring the
