@@ -17,6 +17,20 @@ type globalOptions struct {
 	json    bool
 }
 
+func (o *globalOptions) connect(ctx context.Context) (*yolocam.Client, error) {
+	return yolocam.Connect(ctx, &yolocam.Options{Host: o.host, RequestTimeout: o.timeout})
+}
+
+func (o *globalOptions) withCamera(cmd *cobra.Command, fn func(ctx context.Context, c *yolocam.Client) error) error {
+	client, err := o.connect(cmd.Context())
+	if err != nil {
+		return err
+	}
+	defer func() { _ = client.Close() }()
+
+	return fn(cmd.Context(), client)
+}
+
 func newRootCommand() *cobra.Command {
 	opts := &globalOptions{}
 	root := &cobra.Command{
@@ -49,18 +63,4 @@ func Execute(ctx context.Context) error {
 		_, _ = fmt.Fprintf(root.ErrOrStderr(), "yolocam: %s\n", err)
 	}
 	return err
-}
-
-func (o *globalOptions) connect(ctx context.Context) (*yolocam.Client, error) {
-	return yolocam.Connect(ctx, &yolocam.Options{Host: o.host, RequestTimeout: o.timeout})
-}
-
-func (o *globalOptions) withCamera(cmd *cobra.Command, fn func(ctx context.Context, c *yolocam.Client) error) error {
-	client, err := o.connect(cmd.Context())
-	if err != nil {
-		return err
-	}
-	defer func() { _ = client.Close() }()
-
-	return fn(cmd.Context(), client)
 }
