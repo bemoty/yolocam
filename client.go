@@ -13,12 +13,12 @@ import (
 )
 
 const (
-	defaultPort           = 12345
 	defaultRequestTimeout = 5 * time.Second
 	watchBuffer           = 64
 )
 
 type Options struct {
+	Host           string
 	Port           int
 	RequestTimeout time.Duration
 }
@@ -28,8 +28,11 @@ func (o *Options) withDefaults() Options {
 	if o != nil {
 		resolved = *o
 	}
+	if resolved.Host == "" {
+		resolved.Host = firmware.Host
+	}
 	if resolved.Port == 0 {
-		resolved.Port = defaultPort
+		resolved.Port = firmware.Port
 	}
 	if resolved.RequestTimeout == 0 {
 		resolved.RequestTimeout = defaultRequestTimeout
@@ -44,17 +47,17 @@ type Client struct {
 
 // Connect may only hold one connection open at a time. A second one (e.g., alongside Compose) kills the wire
 // until the camera is power-cycled. I haven't found a way around or to recover from this yet.
-func Connect(ctx context.Context, host string, opts *Options) (*Client, error) {
+func Connect(ctx context.Context, opts *Options) (*Client, error) {
 	o := opts.withDefaults()
 	ctx, cancel := context.WithTimeout(ctx, o.RequestTimeout)
 	defer cancel()
 
-	sess, err := session.Dial(ctx, net.JoinHostPort(host, strconv.Itoa(o.Port)), session.Config{
+	sess, err := session.Dial(ctx, net.JoinHostPort(o.Host, strconv.Itoa(o.Port)), session.Config{
 		MaxPayload:        firmware.MaxPayload,
 		HeartbeatInterval: firmware.HeartbeatInterval,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("connect %s: %w", host, err)
+		return nil, fmt.Errorf("connect %s: %w", o.Host, err)
 	}
 	return &Client{sess: sess, requestTimeout: o.RequestTimeout}, nil
 }

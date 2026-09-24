@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/bemoty/yolocam"
+	"github.com/bemoty/yolocam/internal/firmware"
 )
 
 type globalOptions struct {
@@ -27,7 +28,7 @@ func newRootCommand() *cobra.Command {
 	}
 
 	flags := root.PersistentFlags()
-	flags.StringVar(&opts.host, "host", envOr("YOLOCAM_HOST", fallbackHost), "camera address")
+	flags.StringVar(&opts.host, "host", envOr("YOLOCAM_HOST", firmware.Host), "camera address")
 	flags.DurationVar(&opts.timeout, "timeout", 5*time.Second, "timeout for connecting and for each request")
 	flags.BoolVar(&opts.json, "json", false, "print output as JSON")
 
@@ -51,7 +52,7 @@ func Execute(ctx context.Context) error {
 }
 
 func (o *globalOptions) connect(ctx context.Context) (*yolocam.Client, error) {
-	return yolocam.Connect(ctx, o.host, &yolocam.Options{RequestTimeout: o.timeout})
+	return yolocam.Connect(ctx, &yolocam.Options{Host: o.host, RequestTimeout: o.timeout})
 }
 
 func (o *globalOptions) withCamera(cmd *cobra.Command, fn func(ctx context.Context, c *yolocam.Client) error) error {
