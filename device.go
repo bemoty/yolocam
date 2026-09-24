@@ -8,18 +8,24 @@ import (
 	yolocamv1 "github.com/bemoty/yolocam/internal/genproto/yolocam/v1"
 )
 
+// DeviceInfo describes the webcam and the firmware it runs, as reported by [Client.Info].
 type DeviceInfo struct {
-	Model            string `json:"model"`
-	FirmwareVersion  string `json:"firmware_version"`
+	Model            string `json:"model"`            // internal name, e.g. "YunxiCamera-ch131b" for the YoloCam S3
+	FirmwareVersion  string `json:"firmware_version"` // e.g. "1.0.0"; empty if it can't be split from Model
 	Build            string `json:"build"`
 	Serial           string `json:"serial"`
-	BluetoothVersion string `json:"bluetooth_version"`
+	BluetoothVersion string `json:"bluetooth_version"` // e.g. "26030202"
 }
 
+// FirmwareVerified reports whether this library was tested against exactly this firmware version and build. The
+// library does not hard reject unverified firmware, but you can use this to warn users about it (and any shenanigans
+// that may occur).
 func (d DeviceInfo) FirmwareVerified() bool {
 	return firmware.IsVerified(firmware.Release{Version: d.FirmwareVersion, Build: d.Build})
 }
 
+// Info reads the webcam's model, firmware, and serial number. Internally, that's two requests to the webcam, so it's
+// a bit slower than the other getters.
 func (c *Client) Info(ctx context.Context) (DeviceInfo, error) {
 	info, err := c.get(ctx, yolocamv1.PropertyId_PROPERTY_ID_DEVICE_INFO, decodeDeviceInfo)
 	if err != nil {

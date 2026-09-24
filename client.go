@@ -17,10 +17,12 @@ const (
 	watchBuffer           = 64
 )
 
+// Options configure how [Connect] reaches the webcam. Passing nil to [Connect] is the same as passing an empty
+// Options, and any field left at its zero value falls back to its default.
 type Options struct {
-	Host           string
-	Port           int
-	RequestTimeout time.Duration
+	Host           string        // defaults to 192.168.123.10
+	Port           int           // defaults to 12345
+	RequestTimeout time.Duration // per request, and for connecting; defaults to 5 seconds
 }
 
 func (o *Options) withDefaults() Options {
@@ -40,13 +42,21 @@ func (o *Options) withDefaults() Options {
 	return resolved
 }
 
+// Client is a connection to the webcam. It is safe to use from multiple goroutines at once.
+//
+// To keep the connection alive, the Client pings the webcam every 30 seconds. If the webcam stops answering, the
+// Client closes itself and every call from then on returns the error that caused it.
+//
+// Call [Client.Close] when you're done with the webcam.
 type Client struct {
 	sess           *session.Session
 	requestTimeout time.Duration
 }
 
-// Connect may only hold one connection open at a time. A second one (e.g., alongside Compose) kills the wire
-// until the camera is power-cycled. I haven't found a way around or to recover from this yet.
+// Connect opens a connection to the webcam and returns a [Client] for it. Connecting has to finish within the
+// [Options.RequestTimeout], or before ctx is done, whichever comes first.
+//
+// Make sure nothing else is connected to the webcam, including YoloLiv Compose. See package documentation for more info.
 func Connect(ctx context.Context, opts *Options) (*Client, error) {
 	o := opts.withDefaults()
 	ctx, cancel := context.WithTimeout(ctx, o.RequestTimeout)
@@ -62,6 +72,8 @@ func Connect(ctx context.Context, opts *Options) (*Client, error) {
 	return &Client{sess: sess, requestTimeout: o.RequestTimeout}, nil
 }
 
+// Close closes the connection to the webcam. Requests still waiting for a reply, and any running [Client.Watch]
+// return [ErrClosed]. Calling Close more than once is fine.
 func (c *Client) Close() error {
 	return c.sess.Close()
 }
