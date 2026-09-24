@@ -5,6 +5,7 @@ project_name: yolocam
 before:
   hooks:
     - go mod tidy
+    - make licenses
 
 builds:
   - id: yolocam
@@ -25,6 +26,10 @@ archives:
     format_overrides:
       - goos: windows
         formats: [zip]
+    files:
+      - LICENSE
+      - README.md
+      - third_party_licenses/**/*
 
 checksum:
   name_template: checksums.txt

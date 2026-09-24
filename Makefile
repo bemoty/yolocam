@@ -1,8 +1,10 @@
 GO ?= go
 BUF ?= buf
 STATICCHECK ?= $(GO) run honnef.co/go/tools/cmd/staticcheck@2026.2.1
+GO_LICENSES_VERSION ?= v2.0.1
+LICENSES_DIR ?= third_party_licenses
 
-.PHONY: all build test vet fmt fmt-check staticcheck tidy generate lint format breaking check
+.PHONY: all build test vet fmt fmt-check staticcheck tidy generate licenses lint format breaking check
 
 all: build test
 
@@ -30,6 +32,16 @@ tidy:
 generate:
 	$(GO) install tool
 	PATH="$$($(GO) env GOPATH)/bin:$$PATH" $(BUF) generate
+
+# GOOS=windows just because the Windows build has the most dependencies (mousetrap), thus a superset of the others.
+licenses:
+	$(GO) install github.com/google/go-licenses/v2@$(GO_LICENSES_VERSION)
+	GOOS=windows "$$($(GO) env GOPATH)/bin/go-licenses" save ./cmd/yolocam \
+		--save_path=$(LICENSES_DIR) --ignore github.com/bemoty/yolocam --force
+	mkdir -p $(LICENSES_DIR)/go
+	# Distro packages (e.g. Arch) move Go's LICENSE out of GOROOT.
+	cp "$$($(GO) env GOROOT)/LICENSE" $(LICENSES_DIR)/go/LICENSE 2>/dev/null || \
+		cp /usr/share/licenses/go/LICENSE $(LICENSES_DIR)/go/LICENSE
 
 lint:
 	$(BUF) lint
