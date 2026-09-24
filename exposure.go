@@ -6,14 +6,7 @@ import (
 	yolocamv1 "github.com/bemoty/yolocam/internal/genproto/yolocam/v1"
 )
 
-func (c *Client) ExposureISO(ctx context.Context) (int, error) {
-	return c.get(ctx, yolocamv1.PropertyId_PROPERTY_ID_EXPOSURE_ISO, decodeInt[int])
-}
-
-func (c *Client) SetExposureISO(ctx context.Context, iso int) error {
-	return c.set(ctx, yolocamv1.PropertyId_PROPERTY_ID_EXPOSURE_ISO, intValue(iso))
-}
-
+// ExposureType defines whether the webcam picks the exposure itself or uses the ISO you set.
 type ExposureType int
 
 const (
@@ -43,10 +36,26 @@ func (t *ExposureType) UnmarshalText(text []byte) error {
 	return nil
 }
 
+// ExposureType reads the value set by [Client.SetExposureType].
 func (c *Client) ExposureType(ctx context.Context) (ExposureType, error) {
 	return c.get(ctx, yolocamv1.PropertyId_PROPERTY_ID_EXPOSURE_TYPE, decodeInt[ExposureType])
 }
 
+// SetExposureType switches between auto and manual exposure.
 func (c *Client) SetExposureType(ctx context.Context, t ExposureType) error {
 	return c.set(ctx, yolocamv1.PropertyId_PROPERTY_ID_EXPOSURE_TYPE, intValue(t))
+}
+
+// ExposureISO reads the value set by [Client.SetExposureISO].
+func (c *Client) ExposureISO(ctx context.Context) (int, error) {
+	return c.get(ctx, yolocamv1.PropertyId_PROPERTY_ID_EXPOSURE_ISO, decodeInt[int])
+}
+
+// SetExposureISO sets the webcam's ISO sensitivity. Compose offers 100 to 6400 in third stops (100, 125, 160, 200,
+// ...).
+//
+// Setting this value has no visible effect while the exposure type is [ExposureAuto]. The webcam still remembers the
+// value set here though, so setting it to [ExposureManual] later on will read the value set here.
+func (c *Client) SetExposureISO(ctx context.Context, iso int) error {
+	return c.set(ctx, yolocamv1.PropertyId_PROPERTY_ID_EXPOSURE_ISO, intValue(iso))
 }

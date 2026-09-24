@@ -8,6 +8,7 @@ import (
 	yolocamv1 "github.com/bemoty/yolocam/internal/genproto/yolocam/v1"
 )
 
+// MessageType is the kind of a [Message] (e.g. [MessageGet], [MessageSet], ...)
 type MessageType int
 
 const (
@@ -32,22 +33,31 @@ func (t MessageType) MarshalText() ([]byte, error) {
 	return messageTypes.marshal(t), nil
 }
 
+// Message is something the webcam sent without being asked, as delivered by [Client.Watch]. That's mostly pushes,
+// but also replies that arrived after their request already gave up.
 type Message struct {
-	Type         MessageType
-	PropertyID   int
-	Seq          uint32
-	Status       uint32
+	Type       MessageType
+	PropertyID int
+	Seq        uint32
+	Status     uint32
+	// DroppedSoFar counts the messages this Watch skipped so far because the callback was too slow.
 	DroppedSoFar uint64
-	Raw          []byte
-	Err          error
-	msg          *yolocamv1.Message
+	// Raw is the message as protobuf. It's set even if the message couldn't be decoded.
+	Raw []byte
+	// Err is a [*MalformedError] if the message couldn't be decoded.
+	Err error
+	msg *yolocamv1.Message
 }
 
+// PropertyName returns the name of the message's property, e.g. "tracking_rect_push". It's empty for properties the
+// schema doesn't list.
 func (m Message) PropertyName() string {
 	name, _ := propertyName(yolocamv1.PropertyId(m.PropertyID))
 	return name
 }
 
+// ValueJSON returns the message's value as JSON, or null if there is none. The keys come directly from the protobuf
+// schema in proto/, so they can change whenever the schema is renamed.
 func (m Message) ValueJSON() ([]byte, error) {
 	value := m.msg.GetValue()
 	if value == nil {
@@ -56,6 +66,11 @@ func (m Message) ValueJSON() ([]byte, error) {
 	return protojson.MarshalOptions{UseProtoNames: true, EmitUnpopulated: true}.Marshal(value)
 }
 
+// Watch calls fn for every message the webcam sends without being asked, until ctx is done, the connection ends, or
+// fn returns an error. It returns whichever of those happened first.
+//
+// fn runs on the goroutine that called Watch. If fn takes too long, Watch skips the oldest messages instead of falling
+// behind; [Message.DroppedSoFar] tells you how many.
 func (c *Client) Watch(ctx context.Context, fn func(Message) error) error {
 	sub := c.sess.Subscribe(watchBuffer)
 	defer sub.Close()
