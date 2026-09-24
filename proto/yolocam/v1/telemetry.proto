@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package yolocam.v1;
+
+// PUSH tied to session re-arm (SET 215=1) in general. A frame_rate change is just
+// one path that triggers a re-arm. frame_rate mirrors the current frame rate exactly when this
+// fires alongside a frame_rate change.
+//
+// unknown_1 and unknown_3 have held constant (2 and 1) across every observation.
+message FrameRateStatus {
+  uint32 unknown_1 = 1;
+  uint32 frame_rate = 2;
+  uint32 unknown_3 = 3;
+}

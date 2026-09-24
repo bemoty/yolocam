@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package yolocam.v1;
+
+enum PropertyId {
+  PROPERTY_ID_UNSPECIFIED = 0;
+
+  PROPERTY_ID_DEVICE_INFO = 1; // inferred
+  PROPERTY_ID_FRAME_RATE = 5; // confirmed
+  PROPERTY_ID_SHARPNESS = 8; // confirmed
+  PROPERTY_ID_CONTRAST = 9; // confirmed
+  PROPERTY_ID_SATURATION = 10; // confirmed
+  PROPERTY_ID_EXPOSURE_TYPE = 14; // confirmed
+  PROPERTY_ID_EV = 15; // confirmed
+  PROPERTY_ID_ANTI_FLICKER = 16; // confirmed
+  PROPERTY_ID_EXPOSURE_ISO = 17; // confirmed
+  PROPERTY_ID_SHUTTER_US = 18; // confirmed
+  PROPERTY_ID_UNNAMED_20 = 20; // unknown
+  PROPERTY_ID_WB_TYPE = 21; // confirmed
+  PROPERTY_ID_WB_KELVIN = 22; // confirmed
+  PROPERTY_ID_FOCUS_TYPE = 23; // confirmed
+  PROPERTY_ID_FOCUS_REGION_RECT = 24; // confirmed
+  PROPERTY_ID_UNNAMED_26 = 26; // unknown
+  PROPERTY_ID_VIGNETTING_CORRECTION = 27; // confirmed
+  PROPERTY_ID_UNNAMED_31 = 31; // unknown
+  PROPERTY_ID_WB_RED_BLUE_OFFSET = 33; // confirmed
+  PROPERTY_ID_UNNAMED_38 = 38; // unknown
+  PROPERTY_ID_UNNAMED_42 = 42; // unknown
+  PROPERTY_ID_UNNAMED_47 = 47; // unknown
+  PROPERTY_ID_UNNAMED_48 = 48; // unknown
+  PROPERTY_ID_COLOR_STYLE = 50; // confirmed
+  PROPERTY_ID_STYLE_BUNDLE_APPLIED_PUSH = 51; // inferred, PUSH-only
+  PROPERTY_ID_SCENE_PROFILE_PACK = 52; // confirmed
+  PROPERTY_ID_COLOR_STYLE_ID_ECHO = 53; // confirmed
+  PROPERTY_ID_UNNAMED_58 = 58; // unknown
+  PROPERTY_ID_TRACKING_RECT_PUSH = 59; // confirmed, PUSH-only
+  PROPERTY_ID_UNNAMED_60 = 60; // unknown
+  PROPERTY_ID_UNNAMED_61 = 61; // unknown
+  PROPERTY_ID_UNNAMED_62 = 62; // unknown
+  PROPERTY_ID_UNNAMED_63 = 63; // unknown, GET answers status 100 not-implemented
+  PROPERTY_ID_UNNAMED_64 = 64; // unknown
+  PROPERTY_ID_UNNAMED_65 = 65; // unknown
+  PROPERTY_ID_UNNAMED_67 = 67; // unknown
+  PROPERTY_ID_UNNAMED_73 = 73; // unknown
+  PROPERTY_ID_UNNAMED_75 = 75; // unknown
+  PROPERTY_ID_UNNAMED_76 = 76; // unknown
+  PROPERTY_ID_UNNAMED_77 = 77; // unknown
+  PROPERTY_ID_UNNAMED_78 = 78; // unknown
+  PROPERTY_ID_UNNAMED_89 = 89; // unknown
+  PROPERTY_ID_UNNAMED_90 = 90; // unknown
+  PROPERTY_ID_AI_PARAMETER_START_STOP = 91; // inferred, always status 100 not-implemented
+  PROPERTY_ID_STILL_FRAME_CACHE = 93; // confirmed
+  PROPERTY_ID_CLUT_DATA_BINARY_BASELINE = 95; // confirmed
+  PROPERTY_ID_RAW_FRAME_CACHE = 100; // inferred
+  PROPERTY_ID_DR = 102; // confirmed
+  PROPERTY_ID_UNNAMED_103 = 103; // unknown
+  PROPERTY_ID_WB_AUTO_LOCK = 104; // confirmed
+  PROPERTY_ID_WB_TONE = 105; // confirmed
+  PROPERTY_ID_EXPOSURE_AUTO_LOCK = 106; // confirmed
+  PROPERTY_ID_BLUETOOTH_VERSION = 109; // confirmed
+  PROPERTY_ID_MANUAL_FOCUS = 111; // confirmed
+  PROPERTY_ID_UNNAMED_112 = 112; // unknown
+  PROPERTY_ID_UNNAMED_116 = 116; // unknown, date-coded like 109, different sub-component
+  PROPERTY_ID_ZOOM = 117; // confirmed
+  PROPERTY_ID_HSL = 118; // confirmed
+  PROPERTY_ID_ZOOM_PRESET_SLOT = 127; // confirmed
+  PROPERTY_ID_HSL_ENABLED = 128; // confirmed
+  PROPERTY_ID_UNNAMED_210 = 210; // inferred, PUSH-only, fires on session re-arm
+  PROPERTY_ID_ALWAYS_ON = 212; // confirmed
+  PROPERTY_ID_UNNAMED_213 = 213; // unknown, GET answered as PUSH not REPLY
+  PROPERTY_ID_SESSION_ATTACH = 215; // confirmed
+}

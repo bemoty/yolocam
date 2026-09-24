@@ -1,0 +1,23 @@
+{
+  "streams": [
+    {
+      "name": "pipelined_segment",
+      "description": "one TCP segment carrying 3 complete frames",
+      "source": "ai_start.pcapng",
+      "chunks_hex": [
+        "0800000016000000a50000000eab0804109b0620c8012814320208006c5a0800000016000000a50000000eab0804109c0620c8012810320208006f5a0800000016000000a50000000eab0804109d0620c801280f32020808795a"
+      ],
+      "expected_frames": 3
+    },
+    {
+      "name": "frame_split_across_segments",
+      "description": "a frame completed only by the following TCP segment",
+      "source": "ai_reset.pcapng",
+      "chunks_hex": [
+        "0801000014000000a50000000ca9080210c10628d701320208011a5a",
+        "0801000013000000a50000000bae080210c206281532020800db5a"
+      ],
+      "expected_frames": 2
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package yolocam.v1;
+
+// This fires when the AI Parameter section's Start button is pressed (phase=3) and again at
+// the end of the flow (phase=1).
+//
+// The camera always answers status 100 (not implemented). Yololiv Compose seems to implement
+// the AI feature entirely client-side, grabbing a frame (property 100/raw_frame_cache),
+// analyzing it locally, and writing back ordinary exposure/white-balance SETs.
+message AiParameterStartStop {
+  uint32 unknown_1 = 1; // constant 3
+  uint32 phase = 2; // 3 = start, 1 = stop
+}
+
+// A processed still frame the camera caches to its own filesystem for the Color page's custom
+// color-swatch picker to sample from. byte_size is exactly width*height*1.5 (YUV420/NV12).
+message StillFrameCache {
+  uint32 byte_size = 1;
+  string path = 4; // "/app_data/cache/<id>.yuv"
+  uint32 width = 5;
+  uint32 height = 6;
+}
+
+// Same cached-file shape as StillFrameCache but a .raw sensor grab rather than a processed still
+// used by the AiParameterStartStop functionality.
+//
+// shutter_us matches the shutter value in effect at capture time.
+message RawFrameCache {
+  uint32 byte_size = 1;
+  string path = 2; // "/app_data/cache/<id>.raw"
+  uint32 shutter_us = 3;
+  uint32 unknown_4 = 4;
+  uint32 unknown_5 = 5;
+  uint32 unknown_6 = 6;
+  uint32 unknown_7 = 7;
+}

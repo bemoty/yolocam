@@ -1,0 +1,78 @@
+syntax = "proto3";
+
+package yolocam.v1;
+
+// styles_json is a fixed catalog of every built-in style option, including each one's
+// lutFileUrl on Yololiv's own Aliyun OSS bucket. It is not the current selection, so don't read
+// a selected styleId out of it.
+//
+// lut_byte_size matches ScenProfilePack.size_or_id exactly. Both are the LUT byte size.
+message ColorStyle {
+  uint32 style_id = 1;
+  string version = 2;
+  string description = 3;
+  uint32 unknown_4 = 4;
+  uint32 lut_byte_size = 5;
+  string checksum = 6;
+  uint32 unknown_7 = 7;
+  string styles_json = 8;
+}
+
+// Fires alongside every color_style (50) change.
+//
+// gzip_blob is a gzip-compressed POSIX tar archive (~389KB decompressed) containing the
+// AE/AWB/WDR ISP scene tuning for the style (config_scenemode.ini, scene_4k25_linear_0.ini), a
+// manifest, and LUT data also carried by property 95 (clut_data_binary_baseline).
+//
+// Built-in styles are exposure/white-balance presets: only the tuning ini and a metadata file
+// differ between styles; every LUT-shaped file is byte-identical across all of them.
+//
+// size_or_id matches ColorStyle.lut_byte_size for the same change.
+message ScenProfilePack {
+  uint32 unknown_1 = 1; // constant 1
+  uint32 unknown_2 = 2; // constant 1
+  uint32 size_or_id = 3;
+  bytes gzip_blob = 4;
+}
+
+// Fires alongside every color_style (50) change, twice per change: first a sparse zero-keyed
+// placeholder, then the real dense blob.
+//
+// clut_size is constant (5508) across every observation and matches the `clutSize` field of the
+// LUT JSON bundled in property 52's tar.
+//
+// clut_data is byte-identical across every built-in style tested; a fixed shared baseline, not
+// a per-style grade. Its exact internal encoding is not decoded.
+message ClutDataBinaryBaseline {
+  uint32 clut_size = 1;
+  bytes clut_data = 2;
+}
+
+// Each value is a string holding a plain int (not a numeric field), range -100..100, default
+// "0".
+message Hsl {
+  string hue_red = 1;
+  string hue_orange = 2;
+  string hue_yellow = 3;
+  string hue_green = 4;
+  string hue_cyan = 5;
+  string hue_blue = 6;
+  string hue_purple = 7;
+  string hue_magenta = 8;
+  string sat_red = 9;
+  string sat_orange = 10;
+  string sat_yellow = 11;
+  string sat_green = 12;
+  string sat_cyan = 13;
+  string sat_blue = 14;
+  string sat_purple = 15;
+  string sat_magenta = 16;
+  string light_red = 17;
+  string light_orange = 18;
+  string light_yellow = 19;
+  string light_green = 20;
+  string light_cyan = 21;
+  string light_blue = 22;
+  string light_purple = 23;
+  string light_magenta = 24;
+}

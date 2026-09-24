@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package yolocam.v1;
+
+message DeviceInfo {
+  string model_firmware = 1;
+  string serial = 3;
+  string build = 4;
+}

@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package yolocam.v1;
+
+// Used directly by property 24 (focus_region_rect) and wrapped in RectList by property 59
+// (tracking_rect_push). Coordinates are normalised 0..1.
+message Rect {
+  float x1 = 1;
+  float y1 = 2;
+  float x2 = 3;
+  float y2 = 4;
+}
+
+// Empty list means Focus Type=Face detected no subject. Otherwise one Rect per tracked face.
+message RectList {
+  repeated Rect rects = 1;
+}
+
+// x1/y1/x2/y2 are the Zoom > Location crop rect (normalised 0..1)
+// zoom_factor is Zoom > Range (1.0..4.0)
+//
+// At zoom_factor=1.0 the crop covers the full frame and x1/y1 are omitted
+message ZoomRect {
+  float x1 = 1;
+  float y1 = 2;
+  float zoom_factor = 3;
+  float x2 = 4;
+  float y2 = 5;
+}
+
+message KeyedZoomRect {
+  string key = 1; // "0".."3", one per Zoom A/B/C/D preset slot
+  ZoomRect value = 2;
+}
+
+message KeyedZoomTable {
+  message Entries {
+    repeated KeyedZoomRect entries = 1;
+  }
+  oneof payload {
+    KeyedZoomRect entry = 1;
+    Entries entries = 2;
+  }
+}

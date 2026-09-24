@@ -1,0 +1,180 @@
+{
+  "frames": [
+    {
+      "name": "session_attach",
+      "description": "SET 215=1, the first frame of every session",
+      "source": "ai_reset.pcapng",
+      "direction": "to_camera",
+      "frame_hex": "0801000014000000a50000000ca9080210c10628d701320208011a5a",
+      "payload_hex": "080210c10628d70132020801",
+      "message": {
+        "type": 2,
+        "type_name": "SET",
+        "seq": 833,
+        "status": null,
+        "property": 215
+      },
+      "payload_render": "1=2 2=833 5=215 6{1=1}"
+    },
+    {
+      "name": "get_exposure_iso",
+      "description": "GET of a plain int property",
+      "source": "dr.pcapng",
+      "direction": "to_camera",
+      "frame_hex": "080100000f000000a500000007a208011080022811a25a",
+      "payload_hex": "08011080022811",
+      "message": {
+        "type": 1,
+        "type_name": "GET",
+        "seq": 256,
+        "status": null,
+        "property": 17
+      },
+      "payload_render": "1=1 2=256 5=17"
+    },
+    {
+      "name": "reply_set_ack",
+      "description": "REPLY acknowledging a SET: status 200 and no value",
+      "source": "ai_reset.pcapng",
+      "direction": "from_camera",
+      "frame_hex": "0800000012000000a50000000aaf080410c40620c80128110e5a",
+      "payload_hex": "080410c40620c8012811",
+      "message": {
+        "type": 4,
+        "type_name": "REPLY",
+        "seq": 836,
+        "status": 200,
+        "property": 17
+      },
+      "payload_render": "1=4 2=836 4=200 5=17"
+    },
+    {
+      "name": "reply_get_iso",
+      "description": "REPLY to a GET, carrying ISO 800 as a plain int",
+      "source": "dr.pcapng",
+      "direction": "from_camera",
+      "frame_hex": "0800000017000000a50000000faa080410800220c8012811320308a006d15a",
+      "payload_hex": "080410800220c8012811320308a006",
+      "message": {
+        "type": 4,
+        "type_name": "REPLY",
+        "seq": 256,
+        "status": 200,
+        "property": 17
+      },
+      "payload_render": "1=4 2=256 4=200 5=17 6{1=800}"
+    },
+    {
+      "name": "set_sharpness_negative",
+      "description": "SET of a negative sharpness, sent as 60+abs(value)",
+      "source": "imageflip2.pcapng",
+      "direction": "to_camera",
+      "frame_hex": "0801000012000000a50000000aaf080210382808320208457f5a",
+      "payload_hex": "08021038280832020845",
+      "message": {
+        "type": 2,
+        "type_name": "SET",
+        "seq": 56,
+        "status": null,
+        "property": 8
+      },
+      "payload_render": "1=2 2=56 5=8 6{1=69}"
+    },
+    {
+      "name": "set_wb_red_blue_offset",
+      "description": "SET whose value is a nested message",
+      "source": "ai_reset.pcapng",
+      "direction": "to_camera",
+      "frame_hex": "0801000017000000a50000000faa080210c706282132066a0408031007945a",
+      "payload_hex": "080210c706282132066a0408031007",
+      "message": {
+        "type": 2,
+        "type_name": "SET",
+        "seq": 839,
+        "status": null,
+        "property": 33
+      },
+      "payload_render": "1=2 2=839 5=33 6{13{1=3 2=7}}"
+    },
+    {
+      "name": "set_focus_region_rect",
+      "description": "SET carrying a rectangle",
+      "source": "focus_rect_drag.pcapng",
+      "direction": "to_camera",
+      "frame_hex": "0801000021000000a500000019bc0802104d28183211720f0d1843193f1d0000803f2572c40a3f4d5a",
+      "payload_hex": "0802104d28183211720f0d1843193f1d0000803f2572c40a3f",
+      "message": {
+        "type": 2,
+        "type_name": "SET",
+        "seq": 77,
+        "status": null,
+        "property": 24
+      },
+      "payload_render": "1=2 2=77 5=24 6{14{1=0.59868 3=1.0 4=0.54206}}"
+    },
+    {
+      "name": "push_tracking_rect",
+      "description": "PUSH of the face-tracking rectangle",
+      "source": "focustype.pcapng",
+      "direction": "from_camera",
+      "frame_hex": "080000002c000000a500000024810805100120c801283b32199a01160a140d0000983e150000893e1d9a99fb3e2555553f3fa95a",
+      "payload_hex": "0805100120c801283b32199a01160a140d0000983e150000893e1d9a99fb3e2555553f3f",
+      "message": {
+        "type": 5,
+        "type_name": "PUSH",
+        "seq": 1,
+        "status": 200,
+        "property": 59
+      },
+      "payload_render": "1=5 2=1 4=200 5=59 6{19{1{1=0.296875 2=0.267578 3=0.491406 4=0.747396}}}"
+    },
+    {
+      "name": "reply_not_implemented",
+      "description": "REPLY with status 100",
+      "source": "ai_start.pcapng",
+      "direction": "from_camera",
+      "frame_hex": "0800000011000000a500000009ac080410a1062064285b8c5a",
+      "payload_hex": "080410a1062064285b",
+      "message": {
+        "type": 4,
+        "type_name": "REPLY",
+        "seq": 801,
+        "status": 100,
+        "property": 91
+      },
+      "payload_render": "1=4 2=801 4=100 5=91"
+    },
+    {
+      "name": "push_reconnect_213",
+      "description": "PUSH answering property 213 on reconnect",
+      "source": "imageflip.pcapng",
+      "direction": "from_camera",
+      "frame_hex": "0800000016000000a50000000eab0805100220c80128d50132020800325a",
+      "payload_hex": "0805100220c80128d50132020800",
+      "message": {
+        "type": 5,
+        "type_name": "PUSH",
+        "seq": 2,
+        "status": 200,
+        "property": 213
+      },
+      "payload_render": "1=5 2=2 4=200 5=213 6{1=0}"
+    },
+    {
+      "name": "set_hsl",
+      "description": "SET carrying the 24-field HSL table",
+      "source": "hsl_hue_red.pcapng",
+      "direction": "to_camera",
+      "frame_hex": "0801000066000000a50000005efb080210c60228763255f202520a0237371201301a01302201302a01303201303a01304201304a01305201305a01306201306a01307201307a0130820101308a010131920101309a010130a2010130aa010130b2010130ba010130c2010130b65a",
+      "payload_hex": "080210c60228763255f202520a0237371201301a01302201302a01303201303a01304201304a01305201305a01306201306a01307201307a0130820101308a010131920101309a010130a2010130aa010130b2010130ba010130c2010130",
+      "message": {
+        "type": 2,
+        "type_name": "SET",
+        "seq": 326,
+        "status": null,
+        "property": 118
+      },
+      "payload_render": "1=2 2=326 5=118 6{46{1=\"77\" 2=\"0\" 3=\"0\" 4=\"0\" 5=\"0\" 6=\"0\" 7=\"0\" 8=\"0\" 9=\"0\" 10=\"0\" 11=\"0\" 12=\"0\" 13=\"0\" 14=\"0\" 15=\"0\" 16=\"0\" 17=\"1\" 18=\"0\" 19=\"0\" 20=\"0\" 21=\"0\" 22=\"0\" 23=\"0\" 24=\"0\"}}"
+    }
+  ]
+}

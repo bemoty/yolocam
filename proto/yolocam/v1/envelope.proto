@@ -1,0 +1,97 @@
+syntax = "proto3";
+
+package yolocam.v1;
+
+import "yolocam/v1/ai_capture.proto";
+import "yolocam/v1/color.proto";
+import "yolocam/v1/device.proto";
+import "yolocam/v1/focus_zoom.proto";
+import "yolocam/v1/property.proto";
+import "yolocam/v1/telemetry.proto";
+import "yolocam/v1/whitebalance.proto";
+
+// A Message is the protobuf payload of one framed TCP packet. Framing wraps it in a 14-byte
+// header and 2-byte trailer that are not protobuf, so a client has to parse them by hand before
+// this message ever comes into view.
+//
+//   outer header, 8 bytes:
+//   +--------+--------+--------+--------+--------------------------+
+//   | 0x08   | dir    | 0x00   | 0x00   | rest_len (uint32, LE)    |
+//   +--------+--------+--------+--------+--------------------------+
+//
+//   inner header, 6 bytes:
+//   +--------+-----------------------------------+-----------------+
+//   | 0xA5   | payload_len (uint32, BE)          | hdr_xor         |
+//   +--------+-----------------------------------+-----------------+
+//
+//   payload, payload_len bytes:
+//   +-----------------------------------------------------------------+
+//   | protobuf payload                                                 |
+//   +-----------------------------------------------------------------+
+//
+//   trailer, 2 bytes:
+//   +--------+--------+
+//   | pl_xor | 0x5A   |
+//   +--------+--------+
+//
+// dir is 0x01 for app to camera, 0x00 for camera to app.
+//
+// rest_len counts every byte after the outer header: 6 + payload_len + 2. payload_len itself is
+// big-endian, unlike rest_len; that mismatch is the only reason this framing ever looked opaque.
+//
+// hdr_xor is the XOR of the five preceding inner-header bytes (0xA5 and the four length bytes).
+// pl_xor is the XOR of every payload byte. 0x5A is a fixed terminator (0xA5 with its nibbles
+// swapped).
+//
+// Frames are pipelined and can share TCP segments, so read the stream and walk it by rest_len
+// rather than assuming one frame per read.
+message Message {
+  MessageType type = 1;
+  uint32 seq = 2;
+  uint32 status = 4;
+  PropertyId property = 5;
+  Value value = 6;
+}
+
+enum MessageType {
+  MESSAGE_TYPE_UNSPECIFIED = 0;
+  MESSAGE_TYPE_GET = 1;
+  MESSAGE_TYPE_SET = 2;
+  MESSAGE_TYPE_REPLY = 4;
+  MESSAGE_TYPE_PUSH = 5;
+}
+
+message Value {
+  oneof kind {
+    int64 int_value = 1;
+    string string_value_2 = 2;
+    string string_value_7 = 7;
+    DeviceInfo device_info = 10;
+    RedBlueOffset wb_red_blue_offset = 13;
+    Rect rect = 14;
+    ColorStyle color_style = 16;
+    IntWrapper int_wrapper = 17;
+    RectList rect_list = 19;
+    StringWrapper string_wrapper = 22;
+    ScenProfilePack scene_profile_pack = 5;
+    Empty empty = 28;
+    AiParameterStartStop ai_parameter_start_stop = 29;
+    RawFrameCache raw_frame_cache = 30;
+    ClutDataBinaryBaseline clut_data_binary_baseline = 31;
+    StillFrameCache still_frame_cache = 9;
+    FrameRateStatus frame_rate_status = 41;
+    ZoomRect zoom_rect = 45;
+    Hsl hsl = 46;
+    KeyedZoomTable keyed_zoom_table = 48;
+  }
+}
+
+message IntWrapper {
+  uint32 value = 1;
+}
+
+message StringWrapper {
+  string value = 1;
+}
+
+message Empty {}
