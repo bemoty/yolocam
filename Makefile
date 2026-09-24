@@ -2,9 +2,11 @@ GO ?= go
 BUF ?= buf
 STATICCHECK ?= $(GO) run honnef.co/go/tools/cmd/staticcheck@2026.2.1
 GO_LICENSES_VERSION ?= v2.0.1
+ADDLICENSE ?= $(GO) run github.com/google/addlicense@v1.2.0 -c "Joshua Winkler and The yolocam Authors" -l apache
+HEADER_FILES = $$(git ls-files '*.go' '*.proto' | grep -v '^internal/genproto/')
 LICENSES_DIR ?= third_party_licenses
 
-.PHONY: all build test vet fmt fmt-check staticcheck tidy generate licenses lint format breaking check
+.PHONY: all build test vet fmt fmt-check staticcheck tidy generate licenses license-headers license-headers-check lint format breaking check
 
 all: build test
 
@@ -43,6 +45,12 @@ licenses:
 	cp "$$($(GO) env GOROOT)/LICENSE" $(LICENSES_DIR)/go/LICENSE 2>/dev/null || \
 		cp /usr/share/licenses/go/LICENSE $(LICENSES_DIR)/go/LICENSE
 
+license-headers:
+	$(ADDLICENSE) $(HEADER_FILES)
+
+license-headers-check:
+	$(ADDLICENSE) -check $(HEADER_FILES)
+
 lint:
 	$(BUF) lint
 
@@ -52,4 +60,4 @@ format:
 breaking:
 	$(BUF) breaking --against '.git#branch=main'
 
-check: fmt-check vet staticcheck lint breaking test
+check: fmt-check license-headers-check vet staticcheck lint breaking test

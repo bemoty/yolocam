@@ -1,0 +1,10 @@
+repos:
+  - repo: local
+    hooks:
+      - id: addlicense
+        name: addlicense
+        entry: go run github.com/google/addlicense@v1.2.0
+        args: [ "-c", "Joshua Winkler and The yolocam Authors", "-l", "apache" ]
+        language: system
+        files: \.(go|proto)$
+        exclude: ^internal/genproto/
