@@ -162,3 +162,14 @@ func TestRequestTimeout(t *testing.T) {
 		t.Errorf("err = %v, want context.DeadlineExceeded", err)
 	}
 }
+
+func TestCallAfterCloseMatchesErrClosed(t *testing.T) {
+	c, _ := newTestClient(t)
+	if err := c.Close(); err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err := c.ExposureISO(context.Background()); !errors.Is(err, ErrClosed) {
+		t.Errorf("err = %v, want errors.Is ErrClosed", err)
+	}
+}
