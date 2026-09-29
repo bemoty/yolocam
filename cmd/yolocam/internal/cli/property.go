@@ -36,6 +36,14 @@ type property struct {
 
 type warningCheck func(ctx context.Context, c *yolocam.Client) string
 
+var allProperties = slices.Concat(
+	exposureProperties,
+	whiteBalanceProperties,
+	focusProperties,
+	zoomProperties,
+	colorProperties,
+)
+
 func accessor[T any](
 	name, summary string,
 	get func(*yolocam.Client, context.Context) (T, error),
@@ -87,8 +95,6 @@ func parseText[T any, PT interface {
 	err := PT(&v).UnmarshalText([]byte(raw))
 	return v, err
 }
-
-var allProperties = slices.Concat(exposureProperties, whiteBalanceProperties)
 
 func lookupProperty(name string) (property, bool) {
 	for _, p := range allProperties {
