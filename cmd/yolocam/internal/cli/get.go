@@ -33,11 +33,14 @@ func newGetCommand(opts *globalOptions) *cobra.Command {
 	return &cobra.Command{
 		Use:       "get <property>",
 		Short:     "Read a camera property",
-		Args:      cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
+		Args:      cobra.ExactArgs(1),
 		ValidArgs: propertyNames(),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			name := args[0]
-			p, _ := lookupProperty(name)
+			p, ok := lookupProperty(name)
+			if !ok {
+				return fmt.Errorf("get: unknown property %q", name)
+			}
 
 			return opts.withCamera(cmd, func(ctx context.Context, c *yolocam.Client) error {
 				value, err := p.get(ctx, c)

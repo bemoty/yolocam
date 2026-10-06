@@ -17,7 +17,6 @@ package cli
 import (
 	"context"
 	"errors"
-	"io"
 	"net"
 
 	"github.com/bemoty/yolocam"
@@ -26,6 +25,7 @@ import (
 const (
 	exitOK          = 0
 	exitError       = 1
+	exitUsage       = 2
 	exitConnection  = 3
 	exitInterrupted = 130
 )
@@ -48,6 +48,6 @@ func isConnectionError(err error) bool {
 		return true
 	}
 	return errors.Is(err, context.DeadlineExceeded) ||
-		errors.Is(err, io.ErrUnexpectedEOF) ||
+		errors.Is(err, yolocam.ErrConnectionLost) ||
 		errors.Is(err, yolocam.ErrClosed)
 }

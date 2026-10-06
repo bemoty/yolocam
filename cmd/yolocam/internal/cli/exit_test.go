@@ -18,7 +18,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"net"
 	"testing"
 
@@ -30,6 +29,7 @@ func TestExitCode(t *testing.T) {
 	inProperty := func(err error) error {
 		return &yolocam.PropertyError{Op: "get", Property: "exposure_iso", Err: err}
 	}
+	lost := fmt.Errorf("%w: read: checksum mismatch", yolocam.ErrConnectionLost)
 
 	tests := []struct {
 		name string
@@ -42,7 +42,7 @@ func TestExitCode(t *testing.T) {
 		{"not implemented", inProperty(yolocam.ErrNotImplemented), exitError},
 		{"dial failure", fmt.Errorf("connect 192.0.2.1: %w", dialFailure), exitConnection},
 		{"request timeout", inProperty(context.DeadlineExceeded), exitConnection},
-		{"camera hung up", inProperty(fmt.Errorf("read: %w", io.ErrUnexpectedEOF)), exitConnection},
+		{"connection lost", inProperty(lost), exitConnection},
 		{"session closed", inProperty(yolocam.ErrClosed), exitConnection},
 		{"interrupted", inProperty(context.Canceled), exitInterrupted},
 	}

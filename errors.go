@@ -30,6 +30,9 @@ var (
 	ErrUnsupportedValue = errors.New("unsupported value kind")
 	// ErrClosed means the [Client] was closed with [Client.Close].
 	ErrClosed = session.ErrClosed
+	// ErrConnectionLost means the connection to the webcam broke: the webcam hung up, stopped answering the heartbeat,
+	// or sent bytes that aren't a valid frame. The [Client] is unusable afterwards; call [Connect] again.
+	ErrConnectionLost = session.ErrLost
 )
 
 // MalformedError means the webcam sent a message this library couldn't decode at all. It only shows up in

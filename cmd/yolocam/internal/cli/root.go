@@ -68,10 +68,20 @@ func newRootCommand() *cobra.Command {
 }
 
 func Execute(ctx context.Context) int {
-	root := newRootCommand()
+	return execute(ctx, newRootCommand())
+}
+
+func execute(ctx context.Context, root *cobra.Command) int {
+	passedUsageChecks := false
+	// Cobra only gets here once flags and arguments are valid, so an error before it is a usage error.
+	root.PersistentPreRun = func(*cobra.Command, []string) { passedUsageChecks = true }
+
 	err := root.ExecuteContext(ctx)
 	if err != nil && !errors.Is(err, context.Canceled) {
 		_, _ = fmt.Fprintf(root.ErrOrStderr(), "yolocam: %s\n", err)
+	}
+	if err != nil && !passedUsageChecks {
+		return exitUsage
 	}
 	return exitCode(err)
 }

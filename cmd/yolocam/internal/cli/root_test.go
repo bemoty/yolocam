@@ -17,6 +17,7 @@ package cli
 import (
 	"bytes"
 	"context"
+	"io"
 	"strings"
 	"testing"
 )
@@ -48,6 +49,31 @@ func TestSetRejectsBadInputBeforeConnecting(t *testing.T) {
 			_, err := run(t, tt.args...)
 			if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
 				t.Errorf("err = %v, want containing %q", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestRejectedInvocationsExitWithUsage(t *testing.T) {
+	tests := []struct {
+		name string
+		args []string
+		want int
+	}{
+		{"unknown flag", []string{"list", "--nope"}, exitUsage},
+		{"missing argument", []string{"get"}, exitUsage},
+		{"unknown command", []string{"frobnicate"}, exitUsage},
+		{"unknown property", []string{"set", "bogus", "1"}, exitError},
+		{"success", []string{"list"}, exitOK},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			root := newRootCommand()
+			root.SetOut(io.Discard)
+			root.SetErr(io.Discard)
+			root.SetArgs(tt.args)
+			if got := execute(context.Background(), root); got != tt.want {
+				t.Errorf("exit code = %d, want %d", got, tt.want)
 			}
 		})
 	}

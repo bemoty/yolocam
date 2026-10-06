@@ -63,6 +63,7 @@ set. What actually went wrong is wrapped inside, so use [errors.Is] and [errors.
   - [*UnsupportedValueError] if the request to the webcam went through, but the replied value is unexpected (e.g., text
     where a number should be)
   - [ErrClosed] if the [Client] was already closed
+  - [ErrConnectionLost] if the connection to the webcam broke
   - Context errors if ctx was canceled or the request timed out
 
 If YoloLiv ever changes a property in a firmware update, you will most likely run into one of the first three.

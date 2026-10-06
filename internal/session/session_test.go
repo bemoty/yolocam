@@ -187,8 +187,12 @@ func TestReadErrorFailsPendingAndLaterRequests(t *testing.T) {
 	if r := await(t, pending); !errors.Is(r.err, io.ErrUnexpectedEOF) {
 		t.Fatalf("pending err = %v, want io.ErrUnexpectedEOF", r.err)
 	}
-	if _, err := s.Request(context.Background(), typeGet, propISO, nil); !errors.Is(err, io.ErrUnexpectedEOF) {
+	_, err := s.Request(context.Background(), typeGet, propISO, nil)
+	if !errors.Is(err, io.ErrUnexpectedEOF) {
 		t.Errorf("later err = %v, want io.ErrUnexpectedEOF", err)
+	}
+	if !errors.Is(err, ErrLost) {
+		t.Errorf("later err = %v, want ErrLost", err)
 	}
 }
 

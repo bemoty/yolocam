@@ -31,7 +31,10 @@ import (
 	yolocamv1 "github.com/bemoty/yolocam/internal/genproto/yolocam/v1"
 )
 
-var ErrClosed = errors.New("connection closed")
+var (
+	ErrClosed = errors.New("connection closed")
+	ErrLost   = errors.New("connection lost")
+)
 
 type Config struct {
 	MaxPayload        int
@@ -191,7 +194,7 @@ func (s *Session) write(ctx context.Context, b []byte) error {
 	err = fmt.Errorf("write request: %w", err)
 	if n > 0 {
 		// A partial frame leaves the camera's parser mid-frame; the stream is unusable.
-		s.shutdown(err)
+		s.lose(err)
 	}
 	if ctxErr := ctx.Err(); ctxErr != nil {
 		return ctxErr
@@ -207,7 +210,7 @@ func (s *Session) readLoop() {
 			err = io.ErrUnexpectedEOF
 		}
 		if err != nil {
-			s.shutdown(fmt.Errorf("read: %w", err))
+			s.lose(fmt.Errorf("read: %w", err))
 			return
 		}
 
@@ -242,11 +245,15 @@ func (s *Session) heartbeat(interval time.Duration) {
 			_, err := s.attach(ctx)
 			cancel()
 			if err != nil {
-				s.shutdown(fmt.Errorf("heartbeat: %w", err))
+				s.lose(fmt.Errorf("heartbeat: %w", err))
 				return
 			}
 		}
 	}
+}
+
+func (s *Session) lose(cause error) {
+	s.shutdown(fmt.Errorf("%w: %w", ErrLost, cause))
 }
 
 func (s *Session) shutdown(cause error) {
