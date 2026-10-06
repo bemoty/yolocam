@@ -44,6 +44,7 @@ func TestExitCode(t *testing.T) {
 		{"request timeout", inProperty(context.DeadlineExceeded), exitConnection},
 		{"connection lost", inProperty(lost), exitConnection},
 		{"session closed", inProperty(yolocam.ErrClosed), exitConnection},
+		{"camera busy", errCameraBusy, exitBusy},
 		{"interrupted", inProperty(context.Canceled), exitInterrupted},
 	}
 	for _, tt := range tests {

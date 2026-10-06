@@ -27,6 +27,7 @@ const (
 	exitError       = 1
 	exitUsage       = 2
 	exitConnection  = 3
+	exitBusy        = 4
 	exitInterrupted = 130
 )
 
@@ -36,6 +37,8 @@ func exitCode(err error) int {
 		return exitOK
 	case errors.Is(err, context.Canceled):
 		return exitInterrupted
+	case errors.Is(err, errCameraBusy):
+		return exitBusy
 	case isConnectionError(err):
 		return exitConnection
 	default:

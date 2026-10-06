@@ -33,6 +33,12 @@ type globalOptions struct {
 }
 
 func (o *globalOptions) withCamera(cmd *cobra.Command, fn func(ctx context.Context, c *yolocam.Client) error) error {
+	unlock, err := lockSession()
+	if err != nil {
+		return err
+	}
+	defer unlock()
+
 	client, err := yolocam.Connect(cmd.Context(), &yolocam.Options{Host: o.host, RequestTimeout: o.timeout})
 	if err != nil {
 		return err
