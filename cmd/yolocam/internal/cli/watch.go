@@ -18,7 +18,6 @@ import (
 	"context"
 	"encoding/hex"
 	"encoding/json"
-	"errors"
 
 	"github.com/spf13/cobra"
 
@@ -70,20 +69,12 @@ func newWatchCommand(opts *globalOptions) *cobra.Command {
 			"malformed frames, or always with --raw.",
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			client, err := opts.connect(cmd.Context())
-			if err != nil {
-				return err
-			}
-			defer func() { _ = client.Close() }()
-
-			enc := json.NewEncoder(cmd.OutOrStdout())
-			err = client.Watch(cmd.Context(), func(m yolocam.Message) error {
-				return enc.Encode(newMessageLine(m, alwaysRaw))
+			return opts.withCamera(cmd, func(ctx context.Context, client *yolocam.Client) error {
+				enc := json.NewEncoder(cmd.OutOrStdout())
+				return client.Watch(ctx, func(m yolocam.Message) error {
+					return enc.Encode(newMessageLine(m, alwaysRaw))
+				})
 			})
-			if errors.Is(err, context.Canceled) {
-				return nil
-			}
-			return err
 		},
 	}
 	cmd.Flags().BoolVar(&alwaysRaw, "raw", false, "include the raw protobuf payload on every line")

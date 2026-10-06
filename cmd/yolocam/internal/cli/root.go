@@ -16,6 +16,7 @@ package cli
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -31,12 +32,8 @@ type globalOptions struct {
 	json    bool
 }
 
-func (o *globalOptions) connect(ctx context.Context) (*yolocam.Client, error) {
-	return yolocam.Connect(ctx, &yolocam.Options{Host: o.host, RequestTimeout: o.timeout})
-}
-
 func (o *globalOptions) withCamera(cmd *cobra.Command, fn func(ctx context.Context, c *yolocam.Client) error) error {
-	client, err := o.connect(cmd.Context())
+	client, err := yolocam.Connect(cmd.Context(), &yolocam.Options{Host: o.host, RequestTimeout: o.timeout})
 	if err != nil {
 		return err
 	}
@@ -70,11 +67,11 @@ func newRootCommand() *cobra.Command {
 	return root
 }
 
-func Execute(ctx context.Context) error {
+func Execute(ctx context.Context) int {
 	root := newRootCommand()
 	err := root.ExecuteContext(ctx)
-	if err != nil {
+	if err != nil && !errors.Is(err, context.Canceled) {
 		_, _ = fmt.Fprintf(root.ErrOrStderr(), "yolocam: %s\n", err)
 	}
-	return err
+	return exitCode(err)
 }
