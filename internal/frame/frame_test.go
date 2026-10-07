@@ -17,7 +17,7 @@ package frame
 import (
 	"bytes"
 	"encoding/hex"
-	"encoding/json"
+	"encoding/json/v2"
 	"errors"
 	"io"
 	"os"

@@ -17,7 +17,7 @@ package cli
 import (
 	"context"
 	"encoding/hex"
-	"encoding/json"
+	"encoding/json/jsontext"
 
 	"github.com/spf13/cobra"
 
@@ -31,7 +31,7 @@ type messageLine struct {
 	Seq          uint32              `json:"seq"`
 	Status       uint32              `json:"status"`
 	DroppedSoFar uint64              `json:"dropped_so_far"`
-	Value        json.RawMessage     `json:"value,omitempty"`
+	Value        jsontext.Value      `json:"value,omitzero"`
 	Raw          string              `json:"raw,omitempty"`
 	Error        string              `json:"error,omitempty"`
 }
@@ -70,9 +70,8 @@ func newWatchCommand(opts *globalOptions) *cobra.Command {
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return opts.withCamera(cmd, func(ctx context.Context, client *yolocam.Client) error {
-				enc := json.NewEncoder(cmd.OutOrStdout())
 				return client.Watch(ctx, func(m yolocam.Message) error {
-					return enc.Encode(newMessageLine(m, alwaysRaw))
+					return writeJSONLine(cmd.OutOrStdout(), newMessageLine(m, alwaysRaw))
 				})
 			})
 		},

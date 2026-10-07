@@ -15,7 +15,8 @@
 package cli
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"fmt"
 	"io"
 
@@ -24,9 +25,13 @@ import (
 
 func (o *globalOptions) print(cmd *cobra.Command, v any, human func(io.Writer) error) error {
 	if o.json {
-		return json.NewEncoder(cmd.OutOrStdout()).Encode(v)
+		return writeJSONLine(cmd.OutOrStdout(), v)
 	}
 	return human(cmd.OutOrStdout())
+}
+
+func writeJSONLine(w io.Writer, v any) error {
+	return json.MarshalEncode(jsontext.NewEncoder(w), v, json.Deterministic(true))
 }
 
 func warn(cmd *cobra.Command, msg string) {
