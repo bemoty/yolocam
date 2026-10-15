@@ -31,7 +31,7 @@ func applySet(p property, raw string) error {
 
 func TestAccessor(t *testing.T) {
 	var stored yolocam.ExposureType
-	p := accessor("mode", "",
+	p := accessor(yolocam.Property{Name: "mode"},
 		func(*yolocam.Client, context.Context) (yolocam.ExposureType, error) { return stored, nil },
 		func(_ *yolocam.Client, _ context.Context, v yolocam.ExposureType) error { stored = v; return nil },
 		parseText[yolocam.ExposureType])
@@ -46,5 +46,13 @@ func TestAccessor(t *testing.T) {
 	_, err := p.parseSet("bogus")
 	if err == nil || err.Error() != `mode: invalid exposure_type "bogus", want one of: auto, manual` {
 		t.Errorf("bad value err = %v", err)
+	}
+}
+
+func TestEveryPropertyHasAnAccessor(t *testing.T) {
+	for _, desc := range yolocam.Properties() {
+		if _, ok := lookupProperty(desc.Name); !ok {
+			t.Errorf("%s has no accessor", desc.Name)
+		}
 	}
 }

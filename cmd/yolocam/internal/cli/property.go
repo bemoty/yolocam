@@ -27,14 +27,10 @@ import (
 type cameraAction func(ctx context.Context, c *yolocam.Client) error
 
 type property struct {
-	name     string
-	summary  string
+	yolocam.Property
 	get      func(ctx context.Context, c *yolocam.Client) (any, error)
 	parseSet func(raw string) (cameraAction, error)
-	warn     warningCheck
 }
-
-type warningCheck func(ctx context.Context, c *yolocam.Client) string
 
 var allProperties = slices.Concat(
 	exposureProperties,
@@ -45,30 +41,39 @@ var allProperties = slices.Concat(
 )
 
 func accessor[T any](
-	name, summary string,
+	desc yolocam.Property,
 	get func(*yolocam.Client, context.Context) (T, error),
 	set func(*yolocam.Client, context.Context, T) error,
 	parse func(string) (T, error),
 ) property {
 	return property{
-		name:    name,
-		summary: summary,
+		Property: desc,
 		get: func(ctx context.Context, c *yolocam.Client) (any, error) {
 			return get(c, ctx)
 		},
 		parseSet: func(raw string) (cameraAction, error) {
 			v, err := parse(raw)
 			if err != nil {
-				return nil, fmt.Errorf("%s: %w", name, err)
+				return nil, fmt.Errorf("%s: %w", desc.Name, err)
 			}
 			return func(ctx context.Context, c *yolocam.Client) error { return set(c, ctx, v) }, nil
 		},
 	}
 }
 
-func (p property) withWarning(warn warningCheck) property {
-	p.warn = warn
-	return p
+func ineffectiveWarning(ctx context.Context, c *yolocam.Client, when yolocam.Condition) string {
+	if when == (yolocam.Condition{}) {
+		return ""
+	}
+	mode, ok := lookupProperty(when.Property)
+	if !ok {
+		return ""
+	}
+	value, err := mode.get(ctx, c)
+	if err != nil || fmt.Sprint(value) == when.Equals {
+		return ""
+	}
+	return fmt.Sprintf("no visible change while %s is %v", when.Property, value)
 }
 
 func parseInt(raw string) (int, error) {
@@ -98,7 +103,7 @@ func parseText[T any, PT interface {
 
 func lookupProperty(name string) (property, bool) {
 	for _, p := range allProperties {
-		if p.name == name {
+		if p.Name == name {
 			return p, true
 		}
 	}
@@ -108,7 +113,7 @@ func lookupProperty(name string) (property, bool) {
 func propertyNames() []string {
 	names := make([]string, 0, len(allProperties))
 	for _, p := range allProperties {
-		names = append(names, p.name)
+		names = append(names, p.Name)
 	}
 	slices.Sort(names)
 	return names

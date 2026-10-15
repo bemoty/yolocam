@@ -14,25 +14,11 @@
 
 package cli
 
-import (
-	"context"
-	"fmt"
-
-	"github.com/bemoty/yolocam"
-)
+import "github.com/bemoty/yolocam"
 
 var focusProperties = []property{
-	accessor("focus-type", "af-s, af-c, face or mf (manual)",
+	accessor(yolocam.FocusTypeProperty,
 		(*yolocam.Client).FocusType, (*yolocam.Client).SetFocusType, parseText),
-	accessor("focus", "manual focus distance, 0 to 100",
-		(*yolocam.Client).ManualFocus, (*yolocam.Client).SetManualFocus, parseInt,
-	).withWarning(warnUnlessManualFocus),
-}
-
-func warnUnlessManualFocus(ctx context.Context, c *yolocam.Client) string {
-	mode, err := c.FocusType(ctx)
-	if err != nil || mode == yolocam.FocusManual {
-		return ""
-	}
-	return fmt.Sprintf("no visible change while focus_type is %s", mode)
+	accessor(yolocam.ManualFocusProperty,
+		(*yolocam.Client).ManualFocus, (*yolocam.Client).SetManualFocus, parseInt),
 }

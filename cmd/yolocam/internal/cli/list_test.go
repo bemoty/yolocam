@@ -17,6 +17,8 @@ package cli
 import (
 	"encoding/json/v2"
 	"testing"
+
+	"github.com/bemoty/yolocam"
 )
 
 func TestListJSON(t *testing.T) {
@@ -24,7 +26,7 @@ func TestListJSON(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	var listings []propertyListing
+	var listings []yolocam.Property
 	if err := json.Unmarshal([]byte(out), &listings); err != nil {
 		t.Fatalf("not JSON: %v\n%s", err, out)
 	}

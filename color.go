@@ -125,21 +125,17 @@ func hslFieldNumber(color HSLColor, ch hslChannel) protoreflect.FieldNumber {
 	return protoreflect.FieldNumber(int(ch)*int(hslColorCount) + int(color) + 1)
 }
 
-func (h HSL) value() (*yolocamv1.Value, error) {
+func (h HSL) value() *yolocamv1.Value {
 	msg := &yolocamv1.Hsl{}
 	fields := msg.ProtoReflect().Descriptor().Fields()
 	for color := range hslColorCount {
 		shift := h[color]
 		for ch := range hslChannelCount {
-			v := *shift.channel(ch)
-			if v < MinHSLShift || v > MaxHSLShift {
-				return nil, fmt.Errorf("%s shift %d is outside %d to %d", color, v, MinHSLShift, MaxHSLShift)
-			}
 			fd := fields.ByNumber(hslFieldNumber(color, ch))
-			msg.ProtoReflect().Set(fd, protoreflect.ValueOfString(strconv.Itoa(v)))
+			msg.ProtoReflect().Set(fd, protoreflect.ValueOfString(strconv.Itoa(*shift.channel(ch))))
 		}
 	}
-	return &yolocamv1.Value{Kind: &yolocamv1.Value_Hsl{Hsl: msg}}, nil
+	return &yolocamv1.Value{Kind: &yolocamv1.Value_Hsl{Hsl: msg}}
 }
 
 func decodeHSL(v *yolocamv1.Value) (HSL, error) {
@@ -171,12 +167,45 @@ func decodeHSL(v *yolocamv1.Value) (HSL, error) {
 	return h, nil
 }
 
+var SaturationProperty = Property{
+	Name:    propertyLabel(yolocamv1.PropertyId_PROPERTY_ID_SATURATION),
+	Summary: "color saturation, 0 is black and white",
+	Value:   Schema{Type: "integer", Minimum: new(0.0), Maximum: new(100.0)},
+}
+
+var HSLEnabledProperty = Property{
+	Name:    propertyLabel(yolocamv1.PropertyId_PROPERTY_ID_HSL_ENABLED),
+	Summary: "whether the HSL adjustment is applied",
+	Value:   Schema{Type: "boolean"},
+}
+
+var HSLProperty = Property{
+	Name:          propertyLabel(yolocamv1.PropertyId_PROPERTY_ID_HSL),
+	Summary:       "hue, saturation and lightness shift per color range; missing ranges reset to no shift",
+	Value:         hslSchema(),
+	EffectiveWhen: Condition{Property: HSLEnabledProperty.Name, Equals: "true"},
+}
+
+func hslSchema() Schema {
+	shift := Schema{Type: "integer", Minimum: new(float64(MinHSLShift)), Maximum: new(float64(MaxHSLShift))}
+	channels := make(map[string]Schema, len(hslChannelNames))
+	for _, name := range hslChannelNames {
+		channels[name] = shift
+	}
+	colors := make(map[string]Schema, hslColorCount)
+	for _, name := range hslColors.validNames() {
+		colors[name] = Schema{Type: "object", Properties: channels}
+	}
+	return Schema{Type: "object", Properties: colors}
+}
+
 // Saturation reads the value set by [Client.SetSaturation].
 func (c *Client) Saturation(ctx context.Context) (int, error) {
 	return c.get(ctx, yolocamv1.PropertyId_PROPERTY_ID_SATURATION, decodeInt[int])
 }
 
-// SetSaturation sets the image's color saturation. Compose offers 0 (black and white) to 100.
+// SetSaturation sets the image's color saturation, 0 being black and white. [SaturationProperty] has the range Compose
+// offers.
 func (c *Client) SetSaturation(ctx context.Context, saturation int) error {
 	return c.set(ctx, yolocamv1.PropertyId_PROPERTY_ID_SATURATION, intValue(saturation))
 }
@@ -196,14 +225,9 @@ func (c *Client) HSL(ctx context.Context) (HSL, error) {
 	return c.get(ctx, yolocamv1.PropertyId_PROPERTY_ID_HSL, decodeHSL)
 }
 
-// SetHSL replaces the whole HSL adjustment, resetting every color range missing from h. Shifts outside
-// [MinHSLShift] to [MaxHSLShift] are rejected before anything is sent.
+// SetHSL replaces the whole HSL adjustment, resetting every color range missing from h.
 //
 // The webcam only uses it while [Client.HSLEnabled] is true.
 func (c *Client) SetHSL(ctx context.Context, h HSL) error {
-	value, err := h.value()
-	if err != nil {
-		return propertyError("set", yolocamv1.PropertyId_PROPERTY_ID_HSL, err)
-	}
-	return c.set(ctx, yolocamv1.PropertyId_PROPERTY_ID_HSL, value)
+	return c.set(ctx, yolocamv1.PropertyId_PROPERTY_ID_HSL, h.value())
 }

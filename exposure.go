@@ -50,6 +50,12 @@ func (t *ExposureType) UnmarshalText(text []byte) error {
 	return nil
 }
 
+var ExposureTypeProperty = Property{
+	Name:    propertyLabel(yolocamv1.PropertyId_PROPERTY_ID_EXPOSURE_TYPE),
+	Summary: "whether the webcam picks the exposure itself",
+	Value:   exposureTypes.schema(),
+}
+
 // ExposureType reads the value set by [Client.SetExposureType].
 func (c *Client) ExposureType(ctx context.Context) (ExposureType, error) {
 	return c.get(ctx, yolocamv1.PropertyId_PROPERTY_ID_EXPOSURE_TYPE, decodeInt[ExposureType])
@@ -60,13 +66,19 @@ func (c *Client) SetExposureType(ctx context.Context, t ExposureType) error {
 	return c.set(ctx, yolocamv1.PropertyId_PROPERTY_ID_EXPOSURE_TYPE, intValue(t))
 }
 
+var ExposureISOProperty = Property{
+	Name:          propertyLabel(yolocamv1.PropertyId_PROPERTY_ID_EXPOSURE_ISO),
+	Summary:       "ISO sensitivity in third stops",
+	Value:         Schema{Type: "integer", Enum: []any{100, 125, 160, 200, 250, 320, 400, 500, 640, 800, 1000, 1250, 1600, 2000, 2500, 3200, 4000, 5000, 6400}},
+	EffectiveWhen: Condition{Property: ExposureTypeProperty.Name, Equals: ExposureManual.String()},
+}
+
 // ExposureISO reads the value set by [Client.SetExposureISO].
 func (c *Client) ExposureISO(ctx context.Context) (int, error) {
 	return c.get(ctx, yolocamv1.PropertyId_PROPERTY_ID_EXPOSURE_ISO, decodeInt[int])
 }
 
-// SetExposureISO sets the webcam's ISO sensitivity. Compose offers 100 to 6400 in third stops (100, 125, 160, 200,
-// ...).
+// SetExposureISO sets the webcam's ISO sensitivity. [ExposureISOProperty] has the values Compose offers.
 //
 // Setting this value has no visible effect while the exposure type is [ExposureAuto]. The webcam still remembers the
 // value set here though, so setting it to [ExposureManual] later on will read the value set here.

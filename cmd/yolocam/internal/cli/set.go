@@ -44,10 +44,7 @@ func newSetCommand(opts *globalOptions) *cobra.Command {
 				if err := apply(ctx, c); err != nil {
 					return err
 				}
-				if p.warn == nil {
-					return nil
-				}
-				if msg := p.warn(ctx, c); msg != "" {
+				if msg := ineffectiveWarning(ctx, c, p.EffectiveWhen); msg != "" {
 					warn(cmd, msg)
 				}
 				return nil

@@ -15,7 +15,6 @@
 package cli
 
 import (
-	"context"
 	"fmt"
 	"strconv"
 	"strings"
@@ -24,21 +23,12 @@ import (
 )
 
 var colorProperties = []property{
-	accessor("saturation", "color saturation, 0 (black and white) to 100",
+	accessor(yolocam.SaturationProperty,
 		(*yolocam.Client).Saturation, (*yolocam.Client).SetSaturation, parseInt),
-	accessor("hsl-enabled", "apply the hsl adjustment, true or false",
+	accessor(yolocam.HSLEnabledProperty,
 		(*yolocam.Client).HSLEnabled, (*yolocam.Client).SetHSLEnabled, parseBool),
-	accessor("hsl", "per-color shifts as COLOR.CHANNEL=N,... with N -100 to 100, or none",
-		(*yolocam.Client).HSL, (*yolocam.Client).SetHSL, parseHSL,
-	).withWarning(warnUnlessHSLEnabled),
-}
-
-func warnUnlessHSLEnabled(ctx context.Context, c *yolocam.Client) string {
-	enabled, err := c.HSLEnabled(ctx)
-	if err != nil || enabled {
-		return ""
-	}
-	return "no visible change while hsl_enabled is false"
+	accessor(yolocam.HSLProperty,
+		(*yolocam.Client).HSL, (*yolocam.Client).SetHSL, parseHSL),
 }
 
 func parseHSL(raw string) (yolocam.HSL, error) {

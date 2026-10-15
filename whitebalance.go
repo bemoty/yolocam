@@ -51,8 +51,8 @@ func (t *WhiteBalanceType) UnmarshalText(text []byte) error {
 	return nil
 }
 
-// WhiteBalanceOffset shifts the white balance towards red or blue. Compose offers 0 to 20 for each, with 10 as the
-// default.
+// WhiteBalanceOffset shifts the white balance towards red or blue. [WhiteBalanceOffsetProperty] has the range Compose
+// offers; its default is 10 for each.
 type WhiteBalanceOffset struct {
 	Red  int `json:"red"`
 	Blue int `json:"blue"`
@@ -72,6 +72,43 @@ func (o WhiteBalanceOffset) value() (*yolocamv1.Value, error) {
 	}}, nil
 }
 
+var WhiteBalanceTypeProperty = Property{
+	Name:    propertyLabel(yolocamv1.PropertyId_PROPERTY_ID_WB_TYPE),
+	Summary: "whether the webcam picks the white balance itself",
+	Value:   whiteBalanceTypes.schema(),
+}
+
+var WhiteBalanceKelvinProperty = Property{
+	Name:          propertyLabel(yolocamv1.PropertyId_PROPERTY_ID_WB_KELVIN),
+	Summary:       "white balance color temperature in kelvin",
+	Value:         Schema{Type: "integer", Minimum: new(2000.0), Maximum: new(10000.0)},
+	EffectiveWhen: Condition{Property: WhiteBalanceTypeProperty.Name, Equals: WhiteBalanceManual.String()},
+}
+
+var WhiteBalanceToneProperty = Property{
+	Name:          propertyLabel(yolocamv1.PropertyId_PROPERTY_ID_WB_TONE),
+	Summary:       "what Compose calls the white balance's Tone",
+	Value:         Schema{Type: "integer", Minimum: new(0.0), Maximum: new(128.0)},
+	EffectiveWhen: Condition{Property: WhiteBalanceTypeProperty.Name, Equals: WhiteBalanceManual.String()},
+}
+
+var WhiteBalanceOffsetProperty = Property{
+	Name:    propertyLabel(yolocamv1.PropertyId_PROPERTY_ID_WB_RED_BLUE_OFFSET),
+	Summary: "white balance shift towards red or blue",
+	Value: Schema{Type: "object", Properties: map[string]Schema{
+		"red":  {Type: "integer", Minimum: new(0.0), Maximum: new(20.0)},
+		"blue": {Type: "integer", Minimum: new(0.0), Maximum: new(20.0)},
+	}},
+	EffectiveWhen: Condition{Property: WhiteBalanceTypeProperty.Name, Equals: WhiteBalanceManual.String()},
+}
+
+var WhiteBalanceAutoLockProperty = Property{
+	Name:          propertyLabel(yolocamv1.PropertyId_PROPERTY_ID_WB_AUTO_LOCK),
+	Summary:       "whether the auto white balance is locked at its current value",
+	Value:         Schema{Type: "boolean"},
+	EffectiveWhen: Condition{Property: WhiteBalanceTypeProperty.Name, Equals: WhiteBalanceAuto.String()},
+}
+
 // WhiteBalanceType reads the value set by [Client.SetWhiteBalanceType].
 func (c *Client) WhiteBalanceType(ctx context.Context) (WhiteBalanceType, error) {
 	return c.get(ctx, yolocamv1.PropertyId_PROPERTY_ID_WB_TYPE, decodeInt[WhiteBalanceType])
@@ -87,7 +124,8 @@ func (c *Client) WhiteBalanceKelvin(ctx context.Context) (int, error) {
 	return c.get(ctx, yolocamv1.PropertyId_PROPERTY_ID_WB_KELVIN, decodeInt[int])
 }
 
-// SetWhiteBalanceKelvin sets the white balance's color temperature in kelvin. Compose offers 2000 to 10000.
+// SetWhiteBalanceKelvin sets the white balance's color temperature in kelvin. [WhiteBalanceKelvinProperty] has the
+// range Compose offers.
 //
 // The webcam only uses it while the white balance type is [WhiteBalanceManual].
 func (c *Client) SetWhiteBalanceKelvin(ctx context.Context, kelvin int) error {
@@ -99,7 +137,8 @@ func (c *Client) WhiteBalanceTone(ctx context.Context) (int, error) {
 	return c.get(ctx, yolocamv1.PropertyId_PROPERTY_ID_WB_TONE, decodeInt[int])
 }
 
-// SetWhiteBalanceTone sets what Compose calls the white balance's Tone. Compose offers 0 to 128.
+// SetWhiteBalanceTone sets what Compose calls the white balance's Tone. [WhiteBalanceToneProperty] has the range
+// Compose offers.
 //
 // The webcam only uses it while the white balance type is [WhiteBalanceManual].
 func (c *Client) SetWhiteBalanceTone(ctx context.Context, tone int) error {
@@ -122,8 +161,8 @@ func (c *Client) WhiteBalanceOffset(ctx context.Context) (WhiteBalanceOffset, er
 	return c.get(ctx, yolocamv1.PropertyId_PROPERTY_ID_WB_RED_BLUE_OFFSET, decodeWhiteBalanceOffset)
 }
 
-// SetWhiteBalanceOffset sets the white balance's red and blue offset. Compose offers 0 to 20 for each. Negative
-// values are rejected before anything is sent.
+// SetWhiteBalanceOffset sets the white balance's red and blue offset. Negative values are rejected before anything is
+// sent.
 //
 // The webcam only uses it while the white balance type is [WhiteBalanceManual].
 func (c *Client) SetWhiteBalanceOffset(ctx context.Context, o WhiteBalanceOffset) error {

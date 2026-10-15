@@ -17,15 +17,15 @@ package cli
 import (
 	"fmt"
 	"io"
+	"maps"
+	"slices"
+	"strings"
 	"text/tabwriter"
 
 	"github.com/spf13/cobra"
-)
 
-type propertyListing struct {
-	Name    string `json:"name"`
-	Summary string `json:"summary"`
-}
+	"github.com/bemoty/yolocam"
+)
 
 func newListCommand(opts *globalOptions) *cobra.Command {
 	return &cobra.Command{
@@ -33,22 +33,39 @@ func newListCommand(opts *globalOptions) *cobra.Command {
 		Short: "List all properties supported by get/set",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			listings := make([]propertyListing, 0, len(allProperties))
+			listings := make([]yolocam.Property, 0, len(allProperties))
 			for _, name := range propertyNames() {
 				p, _ := lookupProperty(name)
-				listings = append(listings, propertyListing{Name: p.name, Summary: p.summary})
+				listings = append(listings, p.Property)
 			}
 			return opts.print(cmd, listings, func(w io.Writer) error { return writeListings(w, listings) })
 		},
 	}
 }
 
-func writeListings(out io.Writer, listings []propertyListing) error {
+func writeListings(out io.Writer, listings []yolocam.Property) error {
 	w := tabwriter.NewWriter(out, 0, 4, 2, ' ', 0)
 	for _, l := range listings {
-		if _, err := fmt.Fprintf(w, "%s\t%s\n", l.Name, l.Summary); err != nil {
+		if _, err := fmt.Fprintf(w, "%s\t%s\t%s\n", l.Name, l.Summary, formatSchema(l.Value)); err != nil {
 			return err
 		}
 	}
 	return w.Flush()
+}
+
+func formatSchema(s yolocam.Schema) string {
+	switch {
+	case len(s.Enum) > 0:
+		values := make([]string, len(s.Enum))
+		for i, v := range s.Enum {
+			values[i] = fmt.Sprint(v)
+		}
+		return strings.Join(values, "|")
+	case s.Minimum != nil && s.Maximum != nil:
+		return fmt.Sprintf("%g to %g", *s.Minimum, *s.Maximum)
+	case len(s.Properties) > 0:
+		return "{" + strings.Join(slices.Sorted(maps.Keys(s.Properties)), ", ") + "}"
+	default:
+		return s.Type
+	}
 }

@@ -36,8 +36,8 @@ Use [Connect] to get a [Client] for interacting with the webcam:
 
 Passing nil uses the webcam's default address. See [Options] if yours differs for whatever reason.
 
-Setters send whatever value you give them. The ranges mentioned in their docs are what Compose offers, but it's not
-confirmed what the cam does if they are outside these ranges.
+Setters send whatever value you give them. The ranges in each property's descriptor (see [Properties]) are what
+Compose offers. If they are outside those ranges, the webcam will usually ignore them.
 
 # Only one at a time!
 

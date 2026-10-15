@@ -23,7 +23,7 @@ import (
 )
 
 var zoomProperties = []property{
-	accessor("zoom", "zoom factor 1 to 4, optionally centered at @X,Y with each 0 to 1",
+	accessor(yolocam.ZoomProperty,
 		(*yolocam.Client).Zoom, (*yolocam.Client).SetZoom, parseZoom),
 }
 

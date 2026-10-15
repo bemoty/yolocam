@@ -41,8 +41,8 @@ func TestSetRejectsBadInputBeforeConnecting(t *testing.T) {
 		wantErr string
 	}{
 		{"set unknown property", []string{"set", "bogus", "1", unroutable}, `set: unknown property "bogus"`},
-		{"set bad integer", []string{"set", "exposure", "4x", unroutable}, `exposure: "4x" is not an integer`},
-		{"set bad enum", []string{"set", "exposure-type", "bogus", unroutable}, `exposure-type: invalid exposure_type "bogus"`},
+		{"set bad integer", []string{"set", "exposure_iso", "4x", unroutable}, `exposure_iso: "4x" is not an integer`},
+		{"set bad enum", []string{"set", "exposure_type", "bogus", unroutable}, `exposure_type: invalid exposure_type "bogus"`},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

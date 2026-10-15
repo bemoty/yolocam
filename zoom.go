@@ -46,8 +46,8 @@ func (z Zoom) String() string {
 // value clamps the center so the zoomed area stays inside the image, the same way Compose limits its Location
 // control.
 func (z Zoom) value() (*yolocamv1.Value, error) {
-	if z.Factor < MinZoomFactor || z.Factor > MaxZoomFactor {
-		return nil, fmt.Errorf("zoom factor %g is outside %g to %g", z.Factor, MinZoomFactor, MaxZoomFactor)
+	if z.Factor < MinZoomFactor {
+		return nil, fmt.Errorf("zoom factor %g is below %g", z.Factor, MinZoomFactor)
 	}
 
 	half := 0.5 / z.Factor
@@ -62,13 +62,23 @@ func (z Zoom) value() (*yolocamv1.Value, error) {
 	}}}, nil
 }
 
+var ZoomProperty = Property{
+	Name:    propertyLabel(yolocamv1.PropertyId_PROPERTY_ID_ZOOM),
+	Summary: "digital zoom into the image, placed by its center",
+	Value: Schema{Type: "object", Properties: map[string]Schema{
+		"factor":   {Type: "number", Minimum: new(MinZoomFactor), Maximum: new(MaxZoomFactor)},
+		"center_x": {Type: "number", Minimum: new(0.0), Maximum: new(1.0)},
+		"center_y": {Type: "number", Minimum: new(0.0), Maximum: new(1.0)},
+	}},
+}
+
 // Zoom reads the value set by [Client.SetZoom].
 func (c *Client) Zoom(ctx context.Context) (Zoom, error) {
 	return c.get(ctx, yolocamv1.PropertyId_PROPERTY_ID_ZOOM, decodeZoom)
 }
 
-// SetZoom zooms into the image. A factor outside [MinZoomFactor] to [MaxZoomFactor] is rejected before anything is
-// sent, and a center too close to the edge is moved inwards until the zoomed area fits.
+// SetZoom zooms into the image. A factor below [MinZoomFactor] is rejected before anything is sent, and a center too
+// close to the edge is moved inwards until the zoomed area fits.
 func (c *Client) SetZoom(ctx context.Context, z Zoom) error {
 	value, err := z.value()
 	if err != nil {

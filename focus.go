@@ -54,6 +54,19 @@ func (t *FocusType) UnmarshalText(text []byte) error {
 	return nil
 }
 
+var FocusTypeProperty = Property{
+	Name:    propertyLabel(yolocamv1.PropertyId_PROPERTY_ID_FOCUS_TYPE),
+	Summary: "autofocus mode, or manual focus",
+	Value:   focusTypes.schema(),
+}
+
+var ManualFocusProperty = Property{
+	Name:          propertyLabel(yolocamv1.PropertyId_PROPERTY_ID_MANUAL_FOCUS),
+	Summary:       "manual focus distance",
+	Value:         Schema{Type: "integer", Minimum: new(0.0), Maximum: new(100.0)},
+	EffectiveWhen: Condition{Property: FocusTypeProperty.Name, Equals: FocusManual.String()},
+}
+
 // FocusType reads the value set by [Client.SetFocusType].
 func (c *Client) FocusType(ctx context.Context) (FocusType, error) {
 	return c.get(ctx, yolocamv1.PropertyId_PROPERTY_ID_FOCUS_TYPE, decodeInt[FocusType])
@@ -69,7 +82,7 @@ func (c *Client) ManualFocus(ctx context.Context) (int, error) {
 	return c.get(ctx, yolocamv1.PropertyId_PROPERTY_ID_MANUAL_FOCUS, decodeInt[int])
 }
 
-// SetManualFocus sets the focus distance. Compose offers 0 to 100.
+// SetManualFocus sets the focus distance. [ManualFocusProperty] has the range Compose offers.
 //
 // The webcam only uses it while the focus type is [FocusManual].
 func (c *Client) SetManualFocus(ctx context.Context, focus int) error {

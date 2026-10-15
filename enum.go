@@ -50,6 +50,15 @@ func (e enum[T]) unmarshal(text []byte) (T, error) {
 	return 0, fmt.Errorf("invalid %s %q, want one of: %s", e.kind, text, strings.Join(e.validNames(), ", "))
 }
 
+func (e enum[T]) schema() Schema {
+	names := e.validNames()
+	values := make([]any, len(names))
+	for i, name := range names {
+		values[i] = name
+	}
+	return Schema{Type: "string", Enum: values}
+}
+
 func (e enum[T]) validNames() []string {
 	names := make([]string, 0, len(e.names))
 	for _, v := range slices.Sorted(maps.Keys(e.names)) {
