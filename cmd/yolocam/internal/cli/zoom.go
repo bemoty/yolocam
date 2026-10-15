@@ -14,37 +14,9 @@
 
 package cli
 
-import (
-	"fmt"
-	"strconv"
-	"strings"
-
-	"github.com/bemoty/yolocam"
-)
+import "github.com/bemoty/yolocam"
 
 var zoomProperties = []property{
 	accessor(yolocam.ZoomProperty,
-		(*yolocam.Client).Zoom, (*yolocam.Client).SetZoom, parseZoom),
-}
-
-func parseZoom(raw string) (yolocam.Zoom, error) {
-	invalid := fmt.Errorf("%q is not FACTOR or FACTOR@X,Y", raw)
-	factorText, centerText, hasCenter := strings.Cut(raw, "@")
-	factor, err := strconv.ParseFloat(factorText, 64)
-	if err != nil {
-		return yolocam.Zoom{}, invalid
-	}
-	z := yolocam.CenteredZoom(factor)
-	if !hasCenter {
-		return z, nil
-	}
-
-	xText, yText, ok := strings.Cut(centerText, ",")
-	x, errX := strconv.ParseFloat(xText, 64)
-	y, errY := strconv.ParseFloat(yText, 64)
-	if !ok || errX != nil || errY != nil {
-		return yolocam.Zoom{}, invalid
-	}
-	z.CenterX, z.CenterY = x, y
-	return z, nil
+		(*yolocam.Client).Zoom, (*yolocam.Client).SetZoom, parseJSON(yolocam.CenteredZoom(0))),
 }

@@ -14,13 +14,7 @@
 
 package cli
 
-import (
-	"fmt"
-	"strconv"
-	"strings"
-
-	"github.com/bemoty/yolocam"
-)
+import "github.com/bemoty/yolocam"
 
 var whiteBalanceProperties = []property{
 	accessor(yolocam.WhiteBalanceTypeProperty,
@@ -30,32 +24,8 @@ var whiteBalanceProperties = []property{
 	accessor(yolocam.WhiteBalanceToneProperty,
 		(*yolocam.Client).WhiteBalanceTone, (*yolocam.Client).SetWhiteBalanceTone, parseInt),
 	accessor(yolocam.WhiteBalanceOffsetProperty,
-		(*yolocam.Client).WhiteBalanceOffset, (*yolocam.Client).SetWhiteBalanceOffset, parseWhiteBalanceOffset),
+		(*yolocam.Client).WhiteBalanceOffset, (*yolocam.Client).SetWhiteBalanceOffset,
+		parseJSON(yolocam.WhiteBalanceOffset{})),
 	accessor(yolocam.WhiteBalanceAutoLockProperty,
 		(*yolocam.Client).WhiteBalanceAutoLock, (*yolocam.Client).SetWhiteBalanceAutoLock, parseBool),
-}
-
-func parseWhiteBalanceOffset(raw string) (yolocam.WhiteBalanceOffset, error) {
-	var o yolocam.WhiteBalanceOffset
-	var haveRed, haveBlue bool
-	invalid := fmt.Errorf("%q is not red=N,blue=N", raw)
-	for part := range strings.SplitSeq(raw, ",") {
-		key, value, ok := strings.Cut(part, "=")
-		n, err := strconv.Atoi(value)
-		if !ok || err != nil {
-			return o, invalid
-		}
-		switch key {
-		case "red":
-			o.Red, haveRed = n, true
-		case "blue":
-			o.Blue, haveBlue = n, true
-		default:
-			return o, invalid
-		}
-	}
-	if !haveRed || !haveBlue {
-		return o, invalid
-	}
-	return o, nil
 }

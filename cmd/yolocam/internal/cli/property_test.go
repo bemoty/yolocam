@@ -56,3 +56,13 @@ func TestEveryPropertyHasAnAccessor(t *testing.T) {
 		}
 	}
 }
+
+func TestParseJSON(t *testing.T) {
+	zoom, err := parseJSON(yolocam.CenteredZoom(0))(`{"factor":2}`)
+	if err != nil || zoom != yolocam.CenteredZoom(2) {
+		t.Errorf("zoom without center = (%v, %v), want centered", zoom, err)
+	}
+	if _, err := parseJSON[yolocam.HSL](nil)(`{"red":{"hu":10}}`); err == nil {
+		t.Error("misspelled hsl channel was accepted")
+	}
+}

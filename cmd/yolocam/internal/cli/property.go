@@ -17,6 +17,7 @@ package cli
 import (
 	"context"
 	"encoding"
+	"encoding/json/v2"
 	"fmt"
 	"slices"
 	"strconv"
@@ -99,6 +100,16 @@ func parseText[T any, PT interface {
 	var v T
 	err := PT(&v).UnmarshalText([]byte(raw))
 	return v, err
+}
+
+func parseJSON[T any](defaults T) func(string) (T, error) {
+	return func(raw string) (T, error) {
+		v := defaults
+		if err := json.Unmarshal([]byte(raw), &v, json.RejectUnknownMembers(true)); err != nil {
+			return defaults, err
+		}
+		return v, nil
+	}
 }
 
 func lookupProperty(name string) (property, bool) {

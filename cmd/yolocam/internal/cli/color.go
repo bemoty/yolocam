@@ -14,13 +14,7 @@
 
 package cli
 
-import (
-	"fmt"
-	"strconv"
-	"strings"
-
-	"github.com/bemoty/yolocam"
-)
+import "github.com/bemoty/yolocam"
 
 var colorProperties = []property{
 	accessor(yolocam.SaturationProperty,
@@ -28,40 +22,5 @@ var colorProperties = []property{
 	accessor(yolocam.HSLEnabledProperty,
 		(*yolocam.Client).HSLEnabled, (*yolocam.Client).SetHSLEnabled, parseBool),
 	accessor(yolocam.HSLProperty,
-		(*yolocam.Client).HSL, (*yolocam.Client).SetHSL, parseHSL),
-}
-
-func parseHSL(raw string) (yolocam.HSL, error) {
-	h := yolocam.HSL{}
-	if raw == "none" {
-		return h, nil
-	}
-
-	invalid := fmt.Errorf("%q is not COLOR.CHANNEL=N,... (channel hue, saturation or lightness)", raw)
-	for part := range strings.SplitSeq(raw, ",") {
-		key, valueText, ok := strings.Cut(part, "=")
-		colorText, channel, okKey := strings.Cut(key, ".")
-		n, err := strconv.Atoi(valueText)
-		if !ok || !okKey || err != nil {
-			return nil, invalid
-		}
-		var color yolocam.HSLColor
-		if err := color.UnmarshalText([]byte(colorText)); err != nil {
-			return nil, err
-		}
-
-		shift := h[color]
-		switch channel {
-		case "hue":
-			shift.Hue = n
-		case "saturation":
-			shift.Saturation = n
-		case "lightness":
-			shift.Lightness = n
-		default:
-			return nil, invalid
-		}
-		h[color] = shift
-	}
-	return h, nil
+		(*yolocam.Client).HSL, (*yolocam.Client).SetHSL, parseJSON[yolocam.HSL](nil)),
 }
