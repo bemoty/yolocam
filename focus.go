@@ -77,14 +77,16 @@ func (c *Client) SetFocusType(ctx context.Context, t FocusType) error {
 	return c.set(ctx, yolocamv1.PropertyId_PROPERTY_ID_FOCUS_TYPE, intValue(t))
 }
 
-// ManualFocus reads the value set by [Client.SetManualFocus].
+// ManualFocus reads the value set by [Client.SetManualFocus]. Outside [FocusManual] it reports something else, most
+// likely the lens position the autofocus picked.
 func (c *Client) ManualFocus(ctx context.Context) (int, error) {
 	return c.get(ctx, yolocamv1.PropertyId_PROPERTY_ID_MANUAL_FOCUS, decodeInt[int])
 }
 
 // SetManualFocus sets the focus distance. [ManualFocusProperty] has the range Compose offers.
 //
-// The webcam only uses it while the focus type is [FocusManual].
+// The webcam only uses it while the focus type is [FocusManual], and only keeps it if set in that mode. A value set
+// during autofocus is gone once the focus type is back to [FocusManual].
 func (c *Client) SetManualFocus(ctx context.Context, focus int) error {
 	return c.set(ctx, yolocamv1.PropertyId_PROPERTY_ID_MANUAL_FOCUS, intValue(focus))
 }

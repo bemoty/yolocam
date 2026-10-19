@@ -80,8 +80,8 @@ func (c *Client) ExposureISO(ctx context.Context) (int, error) {
 
 // SetExposureISO sets the webcam's ISO sensitivity. [ExposureISOProperty] has the values Compose offers.
 //
-// Setting this value has no visible effect while the exposure type is [ExposureAuto]. The webcam still remembers the
-// value set here though, so setting it to [ExposureManual] later on will read the value set here.
+// While the exposure type is [ExposureAuto], the webcam ignores this: the set succeeds, but the stored value doesn't
+// change. Switch to [ExposureManual] first. The value set in manual is kept across switches to auto and back.
 func (c *Client) SetExposureISO(ctx context.Context, iso int) error {
 	return c.set(ctx, yolocamv1.PropertyId_PROPERTY_ID_EXPOSURE_ISO, intValue(iso))
 }

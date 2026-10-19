@@ -75,7 +75,7 @@ func ineffectiveWarning(ctx context.Context, c *yolocam.Client, when yolocam.Con
 	if err != nil || fmt.Sprint(value) == when.Equals {
 		return ""
 	}
-	return fmt.Sprintf("no visible change while %s is %v", when.Property, value)
+	return fmt.Sprintf("no effect while %s is %v", when.Property, value)
 }
 
 func parseInt(raw string) (int, error) {

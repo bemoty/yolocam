@@ -156,7 +156,7 @@ func (c *Client) SetWhiteBalanceAutoLock(ctx context.Context, locked bool) error
 	return c.set(ctx, yolocamv1.PropertyId_PROPERTY_ID_WB_AUTO_LOCK, boolValue(locked))
 }
 
-// WhiteBalanceOffset reads the value set by [Client.SetWhiteBalanceOffset].
+// WhiteBalanceOffset reads the value set by [Client.SetWhiteBalanceOffset] for the current white balance type.
 func (c *Client) WhiteBalanceOffset(ctx context.Context) (WhiteBalanceOffset, error) {
 	return c.get(ctx, yolocamv1.PropertyId_PROPERTY_ID_WB_RED_BLUE_OFFSET, decodeWhiteBalanceOffset)
 }
@@ -164,7 +164,8 @@ func (c *Client) WhiteBalanceOffset(ctx context.Context) (WhiteBalanceOffset, er
 // SetWhiteBalanceOffset sets the white balance's red and blue offset. Negative values are rejected before anything is
 // sent.
 //
-// The webcam only uses it while the white balance type is [WhiteBalanceManual].
+// The webcam keeps one offset per white balance type and sets the one for the current type, so set
+// [WhiteBalanceManual] first. It's only known to change the image in manual.
 func (c *Client) SetWhiteBalanceOffset(ctx context.Context, o WhiteBalanceOffset) error {
 	value, err := o.value()
 	if err != nil {

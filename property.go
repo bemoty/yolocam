@@ -21,8 +21,8 @@ type Property struct {
 	Name    string `json:"name"`
 	Summary string `json:"summary"`
 	Value   Schema `json:"value"`
-	// EffectiveWhen is the mode another property has to be in for a set to visibly change the image. The webcam
-	// accepts and remembers the value either way.
+	// EffectiveWhen is the mode another property has to be in for a set to visibly change the image. Whether the
+	// webcam keeps a value set outside that mode differs per property; the setter's documentation says which.
 	EffectiveWhen Condition `json:"effective_when,omitzero"`
 }
 

@@ -115,7 +115,7 @@
           "summary": {"type": "string"},
           "value": {"$ref": "#/components/schemas/ValueSchema"},
           "effective_when": {
-            "description": "Setting the property only changes the picture while this other property has this value.",
+            "description": "Setting the property only changes the picture while this other property has this value. Not every property keeps a value set outside that mode, so set this other property first when the value must stick.",
             "type": "object",
             "required": ["property", "equals"],
             "properties": {
