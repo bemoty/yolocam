@@ -59,6 +59,7 @@ All getters and setters return a [*PropertyError], which tells you which propert
 set. What actually went wrong is wrapped inside, so use [errors.Is] and [errors.As] to get to it:
 
   - [ErrNotImplemented] if the webcam doesn't know the property
+  - [ErrInvalidValue] if a setter can't encode the value at all, so nothing was sent
   - [*StatusError] if the webcam refuses the request with some status that the library does not know
   - [*UnsupportedValueError] if the request to the webcam went through, but the replied value is unexpected (e.g., text
     where a number should be)

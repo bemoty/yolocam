@@ -64,7 +64,7 @@ func (o WhiteBalanceOffset) String() string {
 
 func (o WhiteBalanceOffset) value() (*yolocamv1.Value, error) {
 	if o.Red < 0 || o.Blue < 0 {
-		return nil, fmt.Errorf("offset %v is negative", o)
+		return nil, fmt.Errorf("%w: offset %v is negative", ErrInvalidValue, o)
 	}
 
 	return &yolocamv1.Value{Kind: &yolocamv1.Value_WbRedBlueOffset{

@@ -25,17 +25,32 @@ go install github.com/bemoty/yolocam/cmd/yolocam@latest
 Before you use the CLI, make sure YoloLiv Compose is not running. It seems the webcam doesn't handle two simultaneous
 connections to it very well and just bails out until you restart it if you try to connect to it twice.
 
+## Usage
+
+If you want to use this in your Go app, simply import the library and keep one `Client` around for as long as you need 
+the webcam. You can use the CLI `set` and `get` commands for one-off commands to the camera, or use 
+`yolocam serve --stdio` as a child process and keep it running. It holds one connection to the webcam
+and speaks [JSON-RPC 2.0](https://www.jsonrpc.org/specification) over its stdin and stdout, one JSON message per
+line.
+
+```
+$ yolocam serve --stdio
+{"jsonrpc":"2.0","id":1,"method":"set","params":{"property":"wb_kelvin","value":5600}}
+{"jsonrpc":"2.0","result":null,"id":1}
+```
+
+`yolocam openrpc` prints an [OpenRPC](https://spec.open-rpc.org/) document with everything else you could need: methods,
+params, value schemas, errors, exit codes and push notifications.
+
 ## Development
+
+You will need [GNU Make](https://www.gnu.org/software/make/), [Go](https://go.dev/), and [buf](https://buf.build/).
 
 ```
 make build
 make check      # fmt-check, vet, staticcheck, buf lint, buf breaking, tests
 make generate   # regenerate internal/genproto (needs buf on PATH)
 ```
-
-`make generate` installs the `protoc-gen-go` version pinned by the tool directive in `go.mod`, so
-generated output does not depend on what happens to be installed. Install buf itself separately:
-<https://buf.build/docs/installation>.
 
 ## Disclaimer
 

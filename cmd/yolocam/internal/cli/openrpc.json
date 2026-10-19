@@ -1,0 +1,134 @@
+{
+  "openrpc": "1.3.2",
+  "info": {
+    "title": "yolocam serve --stdio",
+    "version": "",
+    "description": "Controls the image settings of a YoloLiv YoloCam S3. Run `yolocam serve --stdio` once and keep it running. It holds the webcam's only settings connection, so don't run another yolocam or YoloLiv Compose at the same time.\n\nMessages are JSON-RPC 2.0 over stdin and stdout, one per line. stderr is for humans. Params are by name. Requests are handled one at a time, so when driving a slider, keep at most one set per property in flight.\n\nExit codes: 0 stdin closed or SIGTERM, 3 webcam unreachable or connection lost, 4 another yolocam holds the webcam, 1 anything else.\n\nCamera errors have code 1 and an error.data.kind to branch on: not_implemented, unsupported_value, camera_status, timeout or session_lost. Bad params have code -32602 and a kind of invalid_params, unknown_property or invalid_value.\n\nAfter subscribe, the webcam's own messages arrive as push notifications. The only named one is tracking_rect_push (face tracking, only while focus_type is face), with one 0..1 rectangle per face. Ignore pushes you don't know."
+  },
+  "methods": [
+    {
+      "name": "initialize",
+      "summary": "Protocol version, CLI build and device information",
+      "paramStructure": "by-name",
+      "params": [],
+      "result": {
+        "name": "info",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "protocol_version": {"type": "integer"},
+            "cli": {"$ref": "#/components/schemas/StringMap"},
+            "device": {"$ref": "#/components/schemas/StringMap"},
+            "firmware_verified": {"type": "boolean"}
+          }
+        }
+      },
+      "errors": [{"$ref": "#/components/errors/CameraError"}]
+    },
+    {
+      "name": "list",
+      "summary": "Every property get and set know, sorted by name",
+      "paramStructure": "by-name",
+      "params": [],
+      "result": {
+        "name": "properties",
+        "schema": {"type": "array", "items": {"$ref": "#/components/schemas/Property"}}
+      }
+    },
+    {
+      "name": "get",
+      "summary": "Read one property",
+      "paramStructure": "by-name",
+      "params": [
+        {"name": "property", "required": true, "schema": {"$ref": "#/components/schemas/PropertyName"}}
+      ],
+      "result": {
+        "name": "property_value",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "property": {"$ref": "#/components/schemas/PropertyName"},
+            "value": {"$ref": "#/components/schemas/PropertyValue"}
+          }
+        }
+      },
+      "errors": [
+        {"$ref": "#/components/errors/InvalidParams"},
+        {"$ref": "#/components/errors/CameraError"}
+      ]
+    },
+    {
+      "name": "set",
+      "summary": "Write one property",
+      "description": "Writes the whole value. Members left out of an object value default: zoom center_x and center_y to 0.5 (factor is required), everything else to 0.",
+      "paramStructure": "by-name",
+      "params": [
+        {"name": "property", "required": true, "schema": {"$ref": "#/components/schemas/PropertyName"}},
+        {"name": "value", "required": true, "schema": {"$ref": "#/components/schemas/PropertyValue"}}
+      ],
+      "result": {"name": "null", "schema": {"type": "null"}},
+      "errors": [
+        {"$ref": "#/components/errors/InvalidParams"},
+        {"$ref": "#/components/errors/CameraError"}
+      ]
+    },
+    {
+      "name": "subscribe",
+      "summary": "Start sending push notifications",
+      "paramStructure": "by-name",
+      "params": [],
+      "result": {"name": "null", "schema": {"type": "null"}}
+    },
+    {
+      "name": "unsubscribe",
+      "summary": "Stop sending push notifications",
+      "paramStructure": "by-name",
+      "params": [],
+      "result": {"name": "null", "schema": {"type": "null"}}
+    }
+  ],
+  "components": {
+    "schemas": {
+      "StringMap": {"type": "object", "additionalProperties": {"type": "string"}},
+      "PropertyName": {"type": "string"},
+      "PropertyValue": {
+        "description": "The schema named after the property in components/schemas.",
+        "oneOf": []
+      },
+      "ValueSchema": {
+        "description": "A subset of JSON Schema describing a property's value.",
+        "type": "object",
+        "required": ["type"],
+        "properties": {
+          "type": {"enum": ["integer", "number", "boolean", "string", "object"]},
+          "minimum": {"type": "number"},
+          "maximum": {"type": "number"},
+          "enum": {"type": "array"},
+          "properties": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/ValueSchema"}}
+        }
+      },
+      "Property": {
+        "type": "object",
+        "required": ["name", "summary", "value"],
+        "properties": {
+          "name": {"type": "string"},
+          "summary": {"type": "string"},
+          "value": {"$ref": "#/components/schemas/ValueSchema"},
+          "effective_when": {
+            "description": "Setting the property only changes the picture while this other property has this value.",
+            "type": "object",
+            "required": ["property", "equals"],
+            "properties": {
+              "property": {"type": "string"},
+              "equals": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "errors": {
+      "InvalidParams": {"code": -32602, "message": "Invalid params"},
+      "CameraError": {"code": 1, "message": "The webcam or the connection to it failed"}
+    }
+  }
+}

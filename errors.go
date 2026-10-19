@@ -28,6 +28,9 @@ var (
 	// ErrUnsupportedValue means the webcam replied with a value this library doesn't understand. Every
 	// [*UnsupportedValueError] matches it, so errors.Is(err, ErrUnsupportedValue) catches them all.
 	ErrUnsupportedValue = errors.New("unsupported value kind")
+	// ErrInvalidValue means a setter got a value it can't put on the wire, e.g. a zoom factor below [MinZoomFactor].
+	// Nothing was sent.
+	ErrInvalidValue = errors.New("invalid value")
 	// ErrClosed means the [Client] was closed with [Client.Close].
 	ErrClosed = session.ErrClosed
 	// ErrConnectionLost means the connection to the webcam broke: the webcam hung up, stopped answering the heartbeat,

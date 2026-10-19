@@ -14,6 +14,8 @@
 
 package firmware
 
+import "slices"
+
 type Release struct {
 	Version string
 	Build   string
@@ -28,10 +30,5 @@ func Verified() []Release {
 }
 
 func IsVerified(r Release) bool {
-	for _, v := range verified {
-		if v == r {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(verified, r)
 }

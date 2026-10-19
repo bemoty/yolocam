@@ -33,14 +33,19 @@ func newListCommand(opts *globalOptions) *cobra.Command {
 		Short: "List all properties supported by get/set",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			listings := make([]yolocam.Property, 0, len(allProperties))
-			for _, name := range propertyNames() {
-				p, _ := lookupProperty(name)
-				listings = append(listings, p.Property)
-			}
+			listings := listedProperties()
 			return opts.print(cmd, listings, func(w io.Writer) error { return writeListings(w, listings) })
 		},
 	}
+}
+
+func listedProperties() []yolocam.Property {
+	listings := make([]yolocam.Property, 0, len(allProperties))
+	for _, name := range propertyNames() {
+		p, _ := lookupProperty(name)
+		listings = append(listings, p.Property)
+	}
+	return listings
 }
 
 func writeListings(out io.Writer, listings []yolocam.Property) error {

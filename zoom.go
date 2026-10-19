@@ -47,7 +47,7 @@ func (z Zoom) String() string {
 // control.
 func (z Zoom) value() (*yolocamv1.Value, error) {
 	if z.Factor < MinZoomFactor {
-		return nil, fmt.Errorf("zoom factor %g is below %g", z.Factor, MinZoomFactor)
+		return nil, fmt.Errorf("%w: zoom factor %g is below %g", ErrInvalidValue, z.Factor, MinZoomFactor)
 	}
 
 	half := 0.5 / z.Factor

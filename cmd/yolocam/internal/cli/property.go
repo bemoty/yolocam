@@ -17,6 +17,7 @@ package cli
 import (
 	"context"
 	"encoding"
+	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"fmt"
 	"slices"
@@ -110,6 +111,16 @@ func parseJSON[T any](defaults T) func(string) (T, error) {
 		}
 		return v, nil
 	}
+}
+
+func (p property) parseJSONValue(raw jsontext.Value) (cameraAction, error) {
+	text := string(raw)
+	if raw.Kind() == '"' {
+		if err := json.Unmarshal(raw, &text); err != nil {
+			return nil, err
+		}
+	}
+	return p.parseSet(text)
 }
 
 func lookupProperty(name string) (property, bool) {

@@ -69,6 +69,8 @@ func newRootCommand() *cobra.Command {
 	root.AddCommand(newInfoCommand(opts))
 	root.AddCommand(newListCommand(opts))
 	root.AddCommand(newVersionCommand(opts))
+	root.AddCommand(newServeCommand(opts))
+	root.AddCommand(newOpenRPCCommand())
 
 	return root
 }
