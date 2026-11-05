@@ -28,10 +28,10 @@ import (
 
 func newSetCommand(opts *globalOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:       "set <property> <value>",
-		Short:     "Set a camera property",
-		Args:      validateSetArgs,
-		ValidArgs: propertyNames(),
+		Use:               "set <property> <value>",
+		Short:             "Set a camera property",
+		Args:              validateSetArgs,
+		ValidArgsFunction: completeProperty(true),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			positional, _ := splitSetArgs(cmd.Flags(), args)
 			name, value := positional[0], positional[1]

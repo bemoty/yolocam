@@ -31,10 +31,10 @@ type propertyValue struct {
 
 func newGetCommand(opts *globalOptions) *cobra.Command {
 	return &cobra.Command{
-		Use:       "get <property>",
-		Short:     "Read a camera property",
-		Args:      cobra.ExactArgs(1),
-		ValidArgs: propertyNames(),
+		Use:               "get <property>",
+		Short:             "Read a camera property",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeProperty(false),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			name := args[0]
 			p, ok := lookupProperty(name)

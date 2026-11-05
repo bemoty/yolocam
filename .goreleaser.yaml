@@ -6,6 +6,7 @@ before:
   hooks:
     - go mod tidy
     - make licenses
+    - sh -c 'mkdir -p completions && for sh in bash zsh fish; do go run ./cmd/yolocam completion "$sh" > "completions/yolocam.$sh"; done'
 
 builds:
   - id: yolocam
@@ -30,6 +31,7 @@ archives:
       - LICENSE
       - README.md
       - third_party_licenses/**/*
+      - completions/*
 
 checksum:
   name_template: checksums.txt
@@ -45,6 +47,9 @@ brews:
     license: Apache-2.0
     install: |
       bin.install "yolocam"
+      bash_completion.install "completions/yolocam.bash" => "yolocam"
+      zsh_completion.install "completions/yolocam.zsh" => "_yolocam"
+      fish_completion.install "completions/yolocam.fish"
     test: system "#{bin}/yolocam version"
 
 scoops:
@@ -66,8 +71,12 @@ aurs:
     git_url: ssh://aur@aur.archlinux.org/yolocam-bin.git
     package: |
       install -Dm755 "./yolocam" "${pkgdir}/usr/bin/yolocam"
+      install -Dm644 "./completions/yolocam.bash" "${pkgdir}/usr/share/bash-completion/completions/yolocam"
+      install -Dm644 "./completions/yolocam.zsh" "${pkgdir}/usr/share/zsh/site-functions/_yolocam"
+      install -Dm644 "./completions/yolocam.fish" "${pkgdir}/usr/share/fish/vendor_completions.d/yolocam.fish"
       install -d "${pkgdir}/usr/share/licenses/yolocam-bin"
       cp -r third_party_licenses "${pkgdir}/usr/share/licenses/yolocam-bin/"
 
 release:
   draft: true
+  replace_existing_artifacts: true

@@ -32,3 +32,6 @@ go.work.sum
 
 # Wireshark captures
 *.pcapng
+
+# Generated shell completions
+/completions/
