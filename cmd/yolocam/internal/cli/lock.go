@@ -30,16 +30,10 @@ func lockSession() (unlock func(), err error) {
 		return nil, err
 	}
 
-	file, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR, 0o600)
+	file, err := openLocked(path)
 	if err != nil {
 		return nil, err
 	}
-
-	if err := tryLock(file); err != nil {
-		_ = file.Close()
-		return nil, err
-	}
-
 	return func() { _ = file.Close() }, nil
 }
 

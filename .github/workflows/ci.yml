@@ -20,6 +20,15 @@ jobs:
       - run: make staticcheck
       - run: make test
 
+  windows-lock:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - run: go test -run TestSessionLock ./cmd/yolocam/internal/cli
+
   proto:
     runs-on: ubuntu-latest
     steps:

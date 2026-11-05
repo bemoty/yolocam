@@ -22,10 +22,19 @@ import (
 	"syscall"
 )
 
-func tryLock(file *os.File) error {
-	err := syscall.Flock(int(file.Fd()), syscall.LOCK_EX|syscall.LOCK_NB)
-	if errors.Is(err, syscall.EWOULDBLOCK) {
-		return errCameraBusy
+func openLocked(path string) (*os.File, error) {
+	file, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR, 0o600)
+	if err != nil {
+		return nil, err
 	}
-	return os.NewSyscallError("flock", err)
+
+	err = syscall.Flock(int(file.Fd()), syscall.LOCK_EX|syscall.LOCK_NB)
+	if err == nil {
+		return file, nil
+	}
+	_ = file.Close()
+	if errors.Is(err, syscall.EWOULDBLOCK) {
+		return nil, errCameraBusy
+	}
+	return nil, os.NewSyscallError("flock", err)
 }

@@ -17,29 +17,9 @@
 package cli
 
 import (
-	"errors"
 	"path/filepath"
 	"testing"
 )
-
-func TestSessionLockIsExclusiveUntilUnlocked(t *testing.T) {
-	t.Setenv("XDG_RUNTIME_DIR", t.TempDir())
-
-	unlock, err := lockSession()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, err := lockSession(); !errors.Is(err, errCameraBusy) {
-		t.Errorf("second lock: err = %v, want errCameraBusy", err)
-	}
-
-	unlock()
-	unlock, err = lockSession()
-	if err != nil {
-		t.Fatalf("lock after unlock: %v", err)
-	}
-	unlock()
-}
 
 func TestSessionLockCreatesMissingFallbackDir(t *testing.T) {
 	t.Setenv("XDG_RUNTIME_DIR", "")

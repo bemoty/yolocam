@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//go:build !unix
+//go:build !unix && !windows
 
 package cli
 
 import "os"
 
-func tryLock(*os.File) error {
-	return nil
+func openLocked(path string) (*os.File, error) {
+	return os.OpenFile(path, os.O_CREATE|os.O_RDWR, 0o600)
 }
