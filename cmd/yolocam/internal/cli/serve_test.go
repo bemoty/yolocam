@@ -74,6 +74,10 @@ func TestCameraMethods(t *testing.T) {
 			`{"jsonrpc":"2.0","error":{"code":1,"message":"get exposure_iso: property not implemented by camera","data":{"kind":"not_implemented","property":"exposure_iso"}},"id":2}`},
 		{"unknown property", `{"jsonrpc":"2.0","id":3,"method":"get","params":{"property":"bogus"}}`, 0,
 			`{"jsonrpc":"2.0","error":{"code":-32602,"message":"Invalid params","data":{"kind":"unknown_property","property":"bogus"}},"id":3}`},
+		{"integer written as float", `{"jsonrpc":"2.0","id":4,"method":"set","params":{"property":"exposure_iso","value":800.0}}`, 200,
+			`{"jsonrpc":"2.0","result":null,"id":4}`},
+		{"number for boolean", `{"jsonrpc":"2.0","id":5,"method":"set","params":{"property":"hsl_enabled","value":0}}`, 0,
+			`{"jsonrpc":"2.0","error":{"code":-32602,"message":"Invalid params","data":{"kind":"invalid_value","property":"hsl_enabled","reason":"hsl_enabled: 0 is not a JSON boolean"}},"id":5}`},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

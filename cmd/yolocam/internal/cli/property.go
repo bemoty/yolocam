@@ -15,11 +15,13 @@
 package cli
 
 import (
+	"bytes"
 	"context"
 	"encoding"
 	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"fmt"
+	"math"
 	"slices"
 	"strconv"
 
@@ -116,13 +118,37 @@ func parseJSON[T any](defaults T) func(string) (T, error) {
 }
 
 func (p property) parseJSONValue(raw jsontext.Value) (cameraAction, error) {
-	text := string(raw)
-	if raw.Kind() == '"' {
-		if err := json.Unmarshal(raw, &text); err != nil {
-			return nil, err
-		}
+	text, err := jsonValueText(p.Value.Type, raw)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", p.Name, err)
 	}
 	return p.parseSet(text)
+}
+
+func jsonValueText(schemaType string, raw jsontext.Value) (string, error) {
+	switch {
+	case schemaType == "integer" && raw.Kind() == '0':
+		return integerText(raw)
+	case schemaType == "boolean" && (raw.Kind() == 't' || raw.Kind() == 'f'),
+		schemaType == "object" && raw.Kind() == '{':
+		return string(raw), nil
+	case schemaType == "string" && raw.Kind() == '"':
+		var text string
+		err := json.Unmarshal(raw, &text)
+		return text, err
+	}
+	return "", fmt.Errorf("%s is not a JSON %s", raw, schemaType)
+}
+
+func integerText(raw jsontext.Value) (string, error) {
+	if !bytes.ContainsAny(raw, ".eE") {
+		return string(raw), nil
+	}
+	var n float64
+	if err := json.Unmarshal(raw, &n); err != nil || n != math.Trunc(n) || n < math.MinInt64 || n >= math.MaxInt64 {
+		return "", fmt.Errorf("%s is not an integer", raw)
+	}
+	return strconv.FormatInt(int64(n), 10), nil
 }
 
 func lookupProperty(name string) (property, bool) {

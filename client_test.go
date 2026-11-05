@@ -17,6 +17,7 @@ package yolocam
 import (
 	"context"
 	"errors"
+	"math"
 	"testing"
 	"time"
 
@@ -161,6 +162,22 @@ func TestSetStatusError(t *testing.T) {
 	}
 	if got, want := err.Error(), "set exposure_iso: property not implemented by camera"; got != want {
 		t.Errorf("message = %q, want %q", got, want)
+	}
+}
+
+func TestSetRejectsUnencodableValuesWithoutSending(t *testing.T) {
+	c, _ := newTestClient(t)
+	ctx := context.Background()
+	tests := map[string]error{
+		"zoom NaN factor":         c.SetZoom(ctx, Zoom{Factor: math.NaN(), CenterX: 0.5, CenterY: 0.5}),
+		"zoom infinite center":    c.SetZoom(ctx, Zoom{Factor: 2, CenterX: math.Inf(1), CenterY: 0.5}),
+		"sharpness reads as -1":   c.SetSharpness(ctx, 61),
+		"hsl unknown color range": c.SetHSL(ctx, HSL{HSLColor(68): {Hue: 1}}),
+	}
+	for name, err := range tests {
+		if !errors.Is(err, ErrInvalidValue) {
+			t.Errorf("%s: err = %v, want ErrInvalidValue", name, err)
+		}
 	}
 }
 
