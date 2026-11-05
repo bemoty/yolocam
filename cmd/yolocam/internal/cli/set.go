@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"slices"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -32,7 +33,7 @@ func newSetCommand(opts *globalOptions) *cobra.Command {
 		Args:      validateSetArgs,
 		ValidArgs: propertyNames(),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			positional, _ := splitSetArgs(args)
+			positional, _ := splitSetArgs(cmd.Flags(), args)
 			name, value := positional[0], positional[1]
 			p, ok := lookupProperty(name)
 			if !ok {
@@ -58,19 +59,41 @@ func newSetCommand(opts *globalOptions) *cobra.Command {
 	return cmd
 }
 
-func splitSetArgs(args []string) (positional, trailing []string) {
-	if len(args) > 2 && args[1] == "--" {
-		args = slices.Concat(args[:1], args[2:])
+func splitSetArgs(flags *pflag.FlagSet, args []string) (positional, flagArgs []string) {
+	for i := 0; i < len(args); i++ {
+		arg := args[i]
+		switch flag, isFlag := lookupFlag(flags, arg); {
+		case arg == "--" && i+1 < len(args):
+			i++
+			positional = append(positional, args[i])
+		case isFlag:
+			flagArgs = append(flagArgs, arg)
+			if flag != nil && flag.NoOptDefVal == "" && !strings.Contains(arg, "=") && i+1 < len(args) {
+				i++
+				flagArgs = append(flagArgs, args[i])
+			}
+		default:
+			positional = append(positional, arg)
+		}
 	}
-	if len(args) <= 2 {
-		return args, nil
+	return positional, flagArgs
+}
+
+func lookupFlag(flags *pflag.FlagSet, arg string) (*pflag.Flag, bool) {
+	if name, ok := strings.CutPrefix(arg, "--"); ok && name != "" {
+		name, _, _ = strings.Cut(name, "=")
+		return flags.Lookup(name), true
 	}
-	return args[:2], args[2:]
+	if len(arg) == 2 && arg[0] == '-' {
+		flag := flags.ShorthandLookup(arg[1:])
+		return flag, flag != nil
+	}
+	return nil, false
 }
 
 func validateSetArgs(cmd *cobra.Command, args []string) error {
-	positional, trailing := splitSetArgs(args)
-	if err := cmd.Flags().Parse(trailing); err != nil {
+	positional, flagArgs := splitSetArgs(cmd.Flags(), args)
+	if err := cmd.Flags().Parse(flagArgs); err != nil {
 		return err
 	}
 	if help, _ := cmd.Flags().GetBool("help"); help {
