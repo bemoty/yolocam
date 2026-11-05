@@ -39,7 +39,9 @@ var allProperties = slices.Concat(
 	whiteBalanceProperties,
 	focusProperties,
 	zoomProperties,
+	imageProperties,
 	colorProperties,
+	deviceProperties,
 )
 
 func accessor[T any](

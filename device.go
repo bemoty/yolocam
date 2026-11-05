@@ -64,3 +64,36 @@ func decodeDeviceInfo(v *yolocamv1.Value) (DeviceInfo, error) {
 	}
 	return info, nil
 }
+
+var FrameRateProperty = Property{
+	Name:    propertyLabel(yolocamv1.PropertyId_PROPERTY_ID_FRAME_RATE),
+	Summary: "frames per second of Compose's preview; other video apps pick their own rate",
+	Value:   Schema{Type: "integer", Enum: []any{25, 30, 50, 60}},
+}
+
+// FrameRate reads the value set by [Client.SetFrameRate].
+func (c *Client) FrameRate(ctx context.Context) (int, error) {
+	return c.get(ctx, yolocamv1.PropertyId_PROPERTY_ID_FRAME_RATE, decodeInt[int])
+}
+
+// SetFrameRate sets the frame rate. [FrameRateProperty] has the values Compose offers. Compose says it only affects
+// its own preview, since other video apps choose a rate themselves.
+func (c *Client) SetFrameRate(ctx context.Context, fps int) error {
+	return c.set(ctx, yolocamv1.PropertyId_PROPERTY_ID_FRAME_RATE, intValue(fps))
+}
+
+var AlwaysOnProperty = Property{
+	Name:    propertyLabel(yolocamv1.PropertyId_PROPERTY_ID_ALWAYS_ON),
+	Summary: "whether the webcam stays on instead of turning off a minute after the last app closes it",
+	Value:   Schema{Type: "boolean"},
+}
+
+// AlwaysOn reports whether the webcam stays on when no app uses it.
+func (c *Client) AlwaysOn(ctx context.Context) (bool, error) {
+	return c.get(ctx, yolocamv1.PropertyId_PROPERTY_ID_ALWAYS_ON, decodeBool)
+}
+
+// SetAlwaysOn keeps the webcam on, or lets it turn off a minute after the last app stops using it.
+func (c *Client) SetAlwaysOn(ctx context.Context, on bool) error {
+	return c.set(ctx, yolocamv1.PropertyId_PROPERTY_ID_ALWAYS_ON, boolValue(on))
+}

@@ -43,6 +43,9 @@ func TestSetRejectsBadInputBeforeConnecting(t *testing.T) {
 		{"set unknown property", []string{"set", "bogus", "1", unroutable}, `set: unknown property "bogus"`},
 		{"set bad integer", []string{"set", "exposure_iso", "4x", unroutable}, `exposure_iso: "4x" is not an integer`},
 		{"set bad enum", []string{"set", "exposure_type", "bogus", unroutable}, `exposure_type: invalid exposure_type "bogus"`},
+		{"set negative-looking value", []string{"set", "ev", "-x", unroutable}, `ev: "-x" is not an integer`},
+		{"set flag before property", []string{"set", unroutable, "ev", "-x"}, `ev: "-x" is not an integer`},
+		{"set dash-dash before value", []string{"set", "ev", "--", "-x", unroutable}, `ev: "-x" is not an integer`},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -51,6 +54,13 @@ func TestSetRejectsBadInputBeforeConnecting(t *testing.T) {
 				t.Errorf("err = %v, want containing %q", err, tt.wantErr)
 			}
 		})
+	}
+}
+
+func TestSetHelpAfterValuePrintsHelpWithoutConnecting(t *testing.T) {
+	out, err := run(t, "set", "ev", "-3", "--help", "--host=192.0.2.1")
+	if err != nil || !strings.Contains(out, "Usage:") {
+		t.Errorf("err = %v, output %q, want usage", err, out)
 	}
 }
 

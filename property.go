@@ -31,6 +31,10 @@ func Properties() []Property {
 	return []Property{
 		ExposureTypeProperty,
 		ExposureISOProperty,
+		ShutterProperty,
+		ExposureAutoLockProperty,
+		AntiFlickerProperty,
+		EVProperty,
 		WhiteBalanceTypeProperty,
 		WhiteBalanceKelvinProperty,
 		WhiteBalanceToneProperty,
@@ -39,9 +43,15 @@ func Properties() []Property {
 		FocusTypeProperty,
 		ManualFocusProperty,
 		ZoomProperty,
+		SharpnessProperty,
+		ContrastProperty,
+		DRProperty,
+		VignettingCorrectionProperty,
 		SaturationProperty,
 		HSLEnabledProperty,
 		HSLProperty,
+		FrameRateProperty,
+		AlwaysOnProperty,
 	}
 }
 

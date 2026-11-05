@@ -38,6 +38,9 @@ func TestEnumWireValues(t *testing.T) {
 	checkEnum(t, ExposureManual, 1, "manual")
 	checkEnum(t, WhiteBalanceManual, 0, "manual")
 	checkEnum(t, WhiteBalanceAuto, 1, "auto")
+	checkEnum(t, AntiFlickerOff, 0, "off")
+	checkEnum(t, AntiFlicker50Hz, 1, "50hz")
+	checkEnum(t, AntiFlicker60Hz, 2, "60hz")
 }
 
 func TestExposureTypeUnknown(t *testing.T) {

@@ -21,4 +21,12 @@ var exposureProperties = []property{
 		(*yolocam.Client).ExposureISO, (*yolocam.Client).SetExposureISO, parseInt),
 	accessor(yolocam.ExposureTypeProperty,
 		(*yolocam.Client).ExposureType, (*yolocam.Client).SetExposureType, parseText),
+	accessor(yolocam.ShutterProperty,
+		(*yolocam.Client).Shutter, (*yolocam.Client).SetShutter, parseInt),
+	accessor(yolocam.ExposureAutoLockProperty,
+		(*yolocam.Client).ExposureAutoLock, (*yolocam.Client).SetExposureAutoLock, parseBool),
+	accessor(yolocam.AntiFlickerProperty,
+		(*yolocam.Client).AntiFlicker, (*yolocam.Client).SetAntiFlicker, parseText),
+	accessor(yolocam.EVProperty,
+		(*yolocam.Client).EV, (*yolocam.Client).SetEV, parseInt),
 }

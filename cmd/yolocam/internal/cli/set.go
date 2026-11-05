@@ -17,20 +17,23 @@ package cli
 import (
 	"context"
 	"fmt"
+	"slices"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 
 	"github.com/bemoty/yolocam"
 )
 
 func newSetCommand(opts *globalOptions) *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:       "set <property> <value>",
 		Short:     "Set a camera property",
-		Args:      cobra.ExactArgs(2),
+		Args:      validateSetArgs,
 		ValidArgs: propertyNames(),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			name, value := args[0], args[1]
+			positional, _ := splitSetArgs(args)
+			name, value := positional[0], positional[1]
 			p, ok := lookupProperty(name)
 			if !ok {
 				return fmt.Errorf("set: unknown property %q", name)
@@ -51,4 +54,27 @@ func newSetCommand(opts *globalOptions) *cobra.Command {
 			})
 		},
 	}
+	cmd.Flags().SetInterspersed(false)
+	return cmd
+}
+
+func splitSetArgs(args []string) (positional, trailing []string) {
+	if len(args) > 2 && args[1] == "--" {
+		args = slices.Concat(args[:1], args[2:])
+	}
+	if len(args) <= 2 {
+		return args, nil
+	}
+	return args[:2], args[2:]
+}
+
+func validateSetArgs(cmd *cobra.Command, args []string) error {
+	positional, trailing := splitSetArgs(args)
+	if err := cmd.Flags().Parse(trailing); err != nil {
+		return err
+	}
+	if help, _ := cmd.Flags().GetBool("help"); help {
+		return pflag.ErrHelp
+	}
+	return cobra.ExactArgs(2)(cmd, slices.Concat(positional, cmd.Flags().Args()))
 }
