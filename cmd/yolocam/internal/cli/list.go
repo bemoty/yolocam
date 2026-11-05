@@ -15,14 +15,17 @@
 package cli
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"maps"
+	"os"
 	"slices"
 	"strings"
 	"text/tabwriter"
 
 	"github.com/spf13/cobra"
+	"golang.org/x/term"
 
 	"github.com/bemoty/yolocam"
 )
@@ -49,13 +52,54 @@ func listedProperties() []yolocam.Property {
 }
 
 func writeListings(out io.Writer, listings []yolocam.Property) error {
-	w := tabwriter.NewWriter(out, 0, 4, 2, ' ', 0)
+	var table bytes.Buffer
+	w := tabwriter.NewWriter(&table, 0, 4, 2, ' ', 0)
 	for _, l := range listings {
-		if _, err := fmt.Fprintf(w, "%s\t%s\t%s\n", l.Name, l.Summary, formatSchema(l.Value)); err != nil {
+		_, _ = fmt.Fprintf(w, "%s\t%s\t%s\n", l.Name, formatListedSchema(l.Value), l.Summary)
+	}
+	if err := w.Flush(); err != nil {
+		return err
+	}
+	width := terminalWidth(out)
+	for line := range strings.Lines(table.String()) {
+		if _, err := io.WriteString(out, truncateLine(line, width)); err != nil {
 			return err
 		}
 	}
-	return w.Flush()
+	return nil
+}
+
+func terminalWidth(out io.Writer) int {
+	f, ok := out.(*os.File)
+	if !ok || !term.IsTerminal(int(f.Fd())) {
+		return 0
+	}
+	width, _, err := term.GetSize(int(f.Fd()))
+	if err != nil {
+		return 0
+	}
+	return width
+}
+
+func truncateLine(line string, width int) string {
+	const ellipsis = "..."
+	runes := []rune(strings.TrimSuffix(line, "\n"))
+	if width <= len(ellipsis) || len(runes) <= width {
+		return line
+	}
+	return string(runes[:width-len(ellipsis)]) + ellipsis + "\n"
+}
+
+func formatListedSchema(s yolocam.Schema) string {
+	const maxListed = 6
+	switch {
+	case len(s.Enum) > maxListed:
+		return fmt.Sprintf("%v to %v, %d values", s.Enum[0], s.Enum[len(s.Enum)-1], len(s.Enum))
+	case len(s.Properties) > maxListed:
+		return fmt.Sprintf("{%d keys}", len(s.Properties))
+	default:
+		return formatSchema(s)
+	}
 }
 
 func formatSchema(s yolocam.Schema) string {
