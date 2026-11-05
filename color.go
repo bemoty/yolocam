@@ -229,5 +229,10 @@ func (c *Client) HSL(ctx context.Context) (HSL, error) {
 //
 // The webcam only uses it while [Client.HSLEnabled] is true.
 func (c *Client) SetHSL(ctx context.Context, h HSL) error {
+	for color := range h {
+		if _, ok := hslColors.names[color]; !ok {
+			return propertyError("set", yolocamv1.PropertyId_PROPERTY_ID_HSL, fmt.Errorf("%w: unknown %v", ErrInvalidValue, color))
+		}
+	}
 	return c.set(ctx, yolocamv1.PropertyId_PROPERTY_ID_HSL, h.value())
 }

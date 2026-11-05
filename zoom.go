@@ -17,6 +17,7 @@ package yolocam
 import (
 	"context"
 	"fmt"
+	"math"
 
 	yolocamv1 "github.com/bemoty/yolocam/internal/genproto/yolocam/v1"
 )
@@ -46,6 +47,11 @@ func (z Zoom) String() string {
 // value clamps the center so the zoomed area stays inside the image, the same way Compose limits its Location
 // control.
 func (z Zoom) value() (*yolocamv1.Value, error) {
+	for _, v := range []float64{z.Factor, z.CenterX, z.CenterY} {
+		if math.IsNaN(v) || math.IsInf(v, 0) {
+			return nil, fmt.Errorf("%w: zoom %v is not finite", ErrInvalidValue, z)
+		}
+	}
 	if z.Factor < MinZoomFactor {
 		return nil, fmt.Errorf("%w: zoom factor %g is below %g", ErrInvalidValue, z.Factor, MinZoomFactor)
 	}
@@ -77,8 +83,8 @@ func (c *Client) Zoom(ctx context.Context) (Zoom, error) {
 	return c.get(ctx, yolocamv1.PropertyId_PROPERTY_ID_ZOOM, decodeZoom)
 }
 
-// SetZoom zooms into the image. A factor below [MinZoomFactor] is rejected before anything is sent, and a center too
-// close to the edge is moved inwards until the zoomed area fits.
+// SetZoom zooms into the image. A factor below [MinZoomFactor], or a NaN or infinite value, is rejected before anything
+// is sent, and a center too close to the edge is moved inwards until the zoomed area fits.
 func (c *Client) SetZoom(ctx context.Context, z Zoom) error {
 	value, err := z.value()
 	if err != nil {

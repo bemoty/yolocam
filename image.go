@@ -16,6 +16,7 @@ package yolocam
 
 import (
 	"context"
+	"fmt"
 
 	yolocamv1 "github.com/bemoty/yolocam/internal/genproto/yolocam/v1"
 )
@@ -38,8 +39,13 @@ func (c *Client) Sharpness(ctx context.Context) (int, error) {
 	return c.get(ctx, yolocamv1.PropertyId_PROPERTY_ID_SHARPNESS, decodeSharpness)
 }
 
-// SetSharpness sets the image sharpness, from [MinSharpness] to [MaxSharpness].
+// SetSharpness sets the image sharpness, from [MinSharpness] to [MaxSharpness]. A value above 60 is rejected before
+// anything is sent, as the webcam would read it back as a negative sharpness.
 func (c *Client) SetSharpness(ctx context.Context, sharpness int) error {
+	if sharpness > negativeSharpnessBase {
+		return propertyError("set", yolocamv1.PropertyId_PROPERTY_ID_SHARPNESS,
+			fmt.Errorf("%w: sharpness %d is above %d", ErrInvalidValue, sharpness, negativeSharpnessBase))
+	}
 	return c.set(ctx, yolocamv1.PropertyId_PROPERTY_ID_SHARPNESS, sharpnessValue(sharpness))
 }
 
