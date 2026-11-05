@@ -18,9 +18,14 @@ This repository contains:
 ## Install
 
 ```
-go get github.com/bemoty/yolocam
-go install github.com/bemoty/yolocam/cmd/yolocam@latest
+brew install bemoty/tap/yolocam                                  # macOS, Linux
+scoop bucket add bemoty https://github.com/bemoty/scoop-bucket   # Windows
+scoop install yolocam
+yay -S yolocam-bin                                               # Arch Linux
+go install github.com/bemoty/yolocam/cmd/yolocam@latest          # from source
 ```
+
+If you want to use it as a library, get it: `go get github.com/bemoty/yolocam`.
 
 Before you use the CLI, make sure YoloLiv Compose is not running. It seems the webcam doesn't handle two simultaneous
 connections to it very well and just bails out until you restart it if you try to connect to it twice.
