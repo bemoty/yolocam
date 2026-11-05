@@ -34,5 +34,40 @@ archives:
 checksum:
   name_template: checksums.txt
 
+brews:
+  - name: yolocam
+    repository:
+      owner: bemoty
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    homepage: https://github.com/bemoty/yolocam
+    description: Control YoloLiv YoloCam S3 camera settings from the command line
+    license: Apache-2.0
+    install: |
+      bin.install "yolocam"
+    test: system "#{bin}/yolocam version"
+
+scoops:
+  - repository:
+      owner: bemoty
+      name: scoop-bucket
+      token: "{{ .Env.SCOOP_BUCKET_TOKEN }}"
+    homepage: https://github.com/bemoty/yolocam
+    description: Control YoloLiv YoloCam S3 camera settings from the command line
+    license: Apache-2.0
+
+aurs:
+  - name: yolocam-bin
+    homepage: https://github.com/bemoty/yolocam
+    description: Control YoloLiv YoloCam S3 camera settings from the command line
+    maintainers: [Joshua Winkler <josh@bemoty.dev>]
+    license: Apache-2.0
+    private_key: "{{ .Env.AUR_SSH_PRIVATE_KEY }}"
+    git_url: ssh://aur@aur.archlinux.org/yolocam-bin.git
+    package: |
+      install -Dm755 "./yolocam" "${pkgdir}/usr/bin/yolocam"
+      install -d "${pkgdir}/usr/share/licenses/yolocam-bin"
+      cp -r third_party_licenses "${pkgdir}/usr/share/licenses/yolocam-bin/"
+
 release:
   draft: true
